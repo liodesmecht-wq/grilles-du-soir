@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E9EEEC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F161A" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Huit casse-têtes de logique, 150 niveaux chacun, défis du jour et badges.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Grilles">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{overscroll-behavior:none}
+body{margin:0;font-size:14px;font-family:system-ui,sans-serif}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Grilles du soir</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: une colonne d'application centrée — accueil → niveaux → partie ; plateau centré, outils dessous */
+:root{
+  --bg:#E9EEEC; --surface:#FFFFFF; --ink:#15222A; --muted:#56686E; --line:#C5D0CD; --soft:#DCE4E1;
+  --accent:#1E6E68; --accent-ink:#FFFFFF; --sun:#E09B26; --moon:#3B5DC2; --err:#C63F2C; --given:#DFE6E3; --gold:#D3941C;
+  --r0:#F3C6B4;--r1:#BCD7F1;--r2:#CDE5B5;--r3:#F1DC9B;--r4:#D7C6ED;--r5:#B6E1DA;--r6:#F0BFD4;--r7:#D8D2C5;--r8:#C2C9F1;
+  --f0:#DD4535;--f1:#2E6ED6;--f2:#2B9B4C;--f3:#E3AE17;--f4:#E57A1C;--f5:#8C4DC8;--f6:#14A3A3;--f7:#D6448B;--f8:#7A5132;--f9:#5E6B78;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'Atkinson Hyperlegible',system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F161A; --surface:#18222A; --ink:#E4EBE9; --muted:#93A4A7; --line:#2D3B42; --soft:#212D34;
+  --accent:#4DB2A8; --accent-ink:#0B1416; --sun:#F0B44A; --moon:#839EF2; --err:#F27762; --given:#24313A; --gold:#EFB64C;
+  --r0:#6C4337;--r1:#2E4C6B;--r2:#3D5930;--r3:#685826;--r4:#4C3E6A;--r5:#22554F;--r6:#673A4F;--r7:#4B4841;--r8:#383F77;
+  --f0:#F2665A;--f1:#5A92F0;--f2:#4CBC6C;--f3:#F2C443;--f4:#F29A45;--f5:#AC74E6;--f6:#36C4C4;--f7:#EE6AA8;--f8:#B0805A;--f9:#8C9AA8;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F161A; --surface:#18222A; --ink:#E4EBE9; --muted:#93A4A7; --line:#2D3B42; --soft:#212D34;
+  --accent:#4DB2A8; --accent-ink:#0B1416; --sun:#F0B44A; --moon:#839EF2; --err:#F27762; --given:#24313A; --gold:#EFB64C;
+  --r0:#6C4337;--r1:#2E4C6B;--r2:#3D5930;--r3:#685826;--r4:#4C3E6A;--r5:#22554F;--r6:#673A4F;--r7:#4B4841;--r8:#383F77;
+  --f0:#F2665A;--f1:#5A92F0;--f2:#4CBC6C;--f3:#F2C443;--f4:#F29A45;--f5:#AC74E6;--f6:#36C4C4;--f7:#EE6AA8;--f8:#B0805A;--f9:#8C9AA8;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+.app{max-width:520px;margin:0 auto;padding-inline:16px;padding-block:18px 40px}
+h1,h2,h3{font-family:var(--font-display);margin:0;text-wrap:balance}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,.cell:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.num{font-variant-numeric:tabular-nums}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;width:42px;height:42px;display:grid;place-items:center;flex:none;padding:0}
+.iconbtn svg{width:19px;height:19px}
+
+/* Accueil */
+.masthead{display:grid;grid-template-columns:42px 1fr 42px;align-items:center;gap:10px;padding-bottom:18px;text-align:center}
+.masthead h1{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.daily{background:var(--ink);color:var(--bg);border-radius:20px;padding:18px;display:grid;gap:14px;text-align:center}
+.daily .eyebrow{color:inherit;opacity:.7}
+.daily h2{font-size:22px}
+.streakline{display:flex;justify-content:center;gap:6px;align-items:center;font-size:14px;opacity:.85}
+.flame{width:16px;height:16px}
+.daily-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.dchip{border:0;background:color-mix(in srgb,var(--bg) 12%,transparent);border-radius:14px;padding:10px 2px 8px;display:grid;justify-items:center;align-content:center;gap:4px;font-size:12px;font-weight:700;color:var(--bg);min-width:0}
+.dchip svg{width:32px;height:32px;display:block}
+.dchip small{font-weight:400;font-size:11px;opacity:.75}
+.dchip.done{background:var(--accent);color:var(--accent-ink)}
+.section-title{display:flex;justify-content:space-between;align-items:baseline;margin:28px 0 10px}
+.section-title h2{font-size:20px}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gtile{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 12px 12px;display:grid;justify-items:center;text-align:center;gap:8px;min-width:0;position:relative}
+.gtile .ico{width:56px;height:56px}
+.gtile .ico svg{width:100%;height:100%;display:block}
+.gtile h3{font-size:18px;line-height:1.15}
+.gtile .meta{font-size:13px;color:var(--muted)}
+.tierbar{width:100%;height:6px;border-radius:99px;background:var(--soft);overflow:hidden}
+.tierbar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.gtile .actions{display:grid;gap:4px;width:100%;margin-top:2px}
+.chip{position:absolute;top:10px;right:10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:#1a1205;border-radius:99px;padding:2px 7px}
+.btn{border:0;border-radius:999px;padding:10px 14px;font-weight:700;font-size:14px;background:var(--soft)}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;border:1px solid var(--line)}
+.btn.link{background:transparent;padding:6px;color:var(--muted);font-weight:700;font-size:13px}
+.btn.danger{background:var(--err);color:var(--surface)}
+.btn:disabled{opacity:.4;cursor:default}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.badge{border:1px dashed var(--line);border-radius:14px;padding:12px 6px;display:grid;justify-items:center;align-content:start;text-align:center;gap:2px;font-size:12px;color:var(--muted);min-width:0}
+.badge b{font-size:13px;color:var(--ink);font-family:var(--font-display)}
+.badge .medal{width:34px;height:34px;margin-bottom:4px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:12px;color:var(--muted)}
+.badge.on{border:1px solid var(--gold);background:color-mix(in srgb,var(--gold) 10%,var(--surface))}
+.badge.on .medal{background:var(--gold);color:#1a1205}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.stat{background:var(--surface);border-radius:14px;padding:12px 6px;border:1px solid var(--line);text-align:center}
+.stat b{font-family:var(--font-display);font-size:24px;display:block;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted)}
+
+/* Partie */
+.topbar{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;margin-bottom:14px}
+.topbar .t{min-width:0;text-align:center}
+.topbar h2{font-size:22px;line-height:1.1}
+.clock{display:grid;justify-items:end;gap:2px;min-width:64px}
+.timer{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1}
+.live{display:flex;gap:1px}
+.live svg{width:13px;height:13px}
+.stage{display:grid;justify-items:center}
+.boardwrap{position:relative;width:min(100%,440px)}
+#board{position:relative;width:100%;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none}
+.loading{position:absolute;inset:0;display:grid;place-items:center;border:3px dashed var(--line);border-radius:10px;color:var(--muted);font-weight:700}
+.grid{position:absolute;inset:0;display:grid;border:3px solid var(--ink);border-radius:10px;overflow:hidden;background:var(--surface)}
+.cell{position:relative;display:grid;place-items:center;border:0;padding:0;background:var(--surface);font-family:var(--font-display);font-weight:700;min-width:0;min-height:0}
+.cell svg{width:62%;height:62%}
+.cell.err{background-image:repeating-linear-gradient(45deg,color-mix(in srgb,var(--err) 30%,transparent) 0 4px,transparent 4px 9px)}
+.cell .x{color:color-mix(in srgb,var(--ink) 55%,transparent);font-weight:500;font-size:1em;line-height:1}
+.cell.auto::after{content:"";width:16%;aspect-ratio:1;border-radius:50%;background:color-mix(in srgb,var(--ink) 30%,transparent)}
+.status{min-height:22px;margin-top:10px;font-size:14px;color:var(--muted);text-align:center}
+.pausecover{position:absolute;inset:0;z-index:5;border-radius:10px;background:var(--surface);border:3px solid var(--ink);display:grid;place-items:center;align-content:center;gap:12px;text-align:center}
+.pausecover h3{font-size:24px}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(100%,440px);margin-top:12px}
+.tool{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:8px 4px;display:grid;justify-items:center;gap:3px;font-size:12px;font-weight:700}
+.tool svg{width:20px;height:20px}
+.tool:disabled{opacity:.4;cursor:default}
+.tool .cnt{color:var(--muted);font-weight:400}
+.numpad{display:grid;gap:6px;width:min(100%,440px);margin-top:12px}
+.digits{display:grid;gap:8px}
+.digits button,.notebtn{border:1px solid var(--line);background:var(--surface);border-radius:16px;min-height:64px;font-family:var(--font-display);font-size:30px;font-weight:700;padding:0;min-width:0;touch-action:manipulation;box-shadow:0 2px 0 var(--line)}
+.digits button:active{transform:translateY(2px);box-shadow:none;background:var(--soft)}
+.digits .erase{font-size:16px;color:var(--muted);display:grid;place-items:center;gap:0}
+.digits .erase svg{width:26px;height:26px}
+.notebtn{min-height:52px;font-size:17px;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.notebtn svg{width:20px;height:20px}
+.notebtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);box-shadow:none}
+.cons{position:absolute;transform:translate(-50%,-50%);width:7%;aspect-ratio:1;border-radius:50%;background:var(--surface);border:1.5px solid var(--ink);display:grid;place-items:center;font-weight:700;font-size:min(3.6vw,16px);line-height:1;z-index:2;pointer-events:none}
+.cons.bad,.ineq.bad{background:var(--err);color:var(--surface);border-color:var(--err)}
+.ineq{position:absolute;transform:translate(-50%,-50%);padding:0 2px;border-radius:5px;background:var(--surface);font-family:var(--font-display);font-weight:800;line-height:1;z-index:2;pointer-events:none;color:var(--ink)}
+.zipsvg{position:absolute;inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);pointer-events:none;z-index:1}
+.dot{position:relative;z-index:2;width:58%;aspect-ratio:1;border-radius:50%;background:var(--ink);color:var(--surface);display:grid;place-items:center;font-size:.9em}
+.dot.hit{background:var(--accent);color:var(--accent-ink)}
+.pip{position:relative;z-index:2;width:66%;aspect-ratio:1;border-radius:50%;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--ink) 25%,transparent)}
+.sel{box-shadow:inset 0 0 0 3px var(--accent)}
+.peer{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+.same{background:color-mix(in srgb,var(--accent) 22%,var(--surface))}
+.given{background:var(--given)}
+.sdk-user{color:var(--accent)}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);width:88%;height:80%;font-size:.34em;font-weight:500;color:var(--muted);font-family:var(--font-body)}
+.notes span{display:grid;place-items:center}
+.ngrid{position:absolute;inset:0;display:grid}
+.ngrid .cell{background:var(--surface)}
+.ngrid .cell.fill{background:var(--ink)}
+.ngrid .cell.lock{background:var(--ink);box-shadow:inset 0 0 0 3px var(--accent)}
+.clue{display:flex;gap:.35em;align-items:center;justify-content:flex-end;padding-right:.4em;font-family:var(--font-display);font-weight:700;color:var(--ink);line-height:1.05;min-width:0;min-height:0;overflow:hidden}
+.clue.col{flex-direction:column;justify-content:flex-end;padding:0 0 .3em;gap:.1em}
+.clue.done{color:color-mix(in srgb,var(--muted) 60%,transparent)}
+.clue:nth-child(odd){background:color-mix(in srgb,var(--soft) 45%,transparent)}
+.lamp{position:relative;border-radius:22%;margin:7%;background:var(--soft);border:0;padding:0;transition:background .12s}
+.lamp.on{background:var(--sun);box-shadow:0 0 0 3px color-mix(in srgb,var(--sun) 35%,transparent)}
+.lampgrid{position:absolute;inset:0;display:grid;border-radius:12px;background:var(--surface);border:3px solid var(--ink);padding:3%}
+.howto{width:min(100%,440px);margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+.howto summary{cursor:pointer;font-weight:700;font-size:14px;list-style:none;display:flex;justify-content:center;gap:6px;color:var(--muted)}
+.howto summary::-webkit-details-marker{display:none}
+.howto p{font-size:14px;color:var(--muted);margin:8px 0 0;text-align:center}
+
+/* Niveaux */
+.levelhead{text-align:center;display:grid;gap:10px;justify-items:center}
+.levelhead .ico{width:64px;height:64px}
+.levelhead .ico svg{width:100%;height:100%;display:block}
+.levelhead p{font-size:14px;color:var(--muted);margin:0;max-width:42ch}
+.levels{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.lv{aspect-ratio:1;border-radius:14px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;align-content:center;gap:1px;font-family:var(--font-display);font-weight:700;font-size:18px;padding:0;min-width:0}
+.lv small{font-size:10px;color:var(--gold);letter-spacing:1px;line-height:1.2}
+.lv .bt{color:var(--muted);letter-spacing:0;font-family:var(--font-body);font-weight:400}
+.lv.next{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.lv.next small{color:inherit}
+.lv:disabled{opacity:.32}
+.tierhead{grid-column:1/-1;margin-top:16px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.tierhead b{font-family:var(--font-display);font-size:16px}
+.tierhead span{font-size:12px;color:var(--muted)}
+
+/* Feuilles */
+.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 55%,transparent);display:grid;place-items:center;padding:16px;z-index:20}
+.card{background:var(--surface);border-radius:22px;padding:24px;width:min(100%,380px);text-align:center;display:grid;gap:12px;max-height:100%;overflow:auto}
+.card h2{font-size:28px}
+.stars{display:flex;justify-content:center;gap:6px}
+.stars svg{width:46px;height:46px}
+.card .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.newbest{display:inline-block;justify-self:center;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:#1a1205;border-radius:99px;padding:3px 10px}
+.setting{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;padding:10px 0;border-top:1px solid var(--line)}
+.setting small{display:block;color:var(--muted);font-size:13px}
+.switch{width:50px;height:30px;border-radius:99px;border:0;background:var(--soft);position:relative;flex:none;padding:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px color-mix(in srgb,var(--ink) 30%,transparent);transition:transform .15s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:30;width:100%;height:100%}
+@media (prefers-reduced-motion:no-preference){
+  .stars svg{animation:pop .45s cubic-bezier(.3,1.6,.5,1) both}
+  .stars svg:nth-child(2){animation-delay:.12s}.stars svg:nth-child(3){animation-delay:.24s}
+  @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+}
+.foot{font-size:12px;color:var(--muted);text-align:center;margin-top:28px}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <section id="home"></section>
+  <section id="levelsView" hidden></section>
+  <section id="play" hidden>
+    <div class="topbar">
+      <button class="iconbtn" id="backBtn" aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="t"><div class="eyebrow" id="pSub"></div><h2 id="pTitle"></h2></div>
+      <div class="clock"><div class="timer num" id="timer">0:00</div><div class="live" id="live"></div></div>
+    </div>
+    <div class="stage">
+      <div class="boardwrap">
+        <div id="board"></div>
+        <div class="pausecover" id="pauseCover" hidden><h3>En pause</h3><button class="btn primary" id="resumeBtn">Reprendre</button></div>
+      </div>
+      <div class="status num" id="status"></div>
+      <div id="extra"></div>
+      <div class="tools">
+        <button class="tool" id="undoBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Annuler</button>
+        <button class="tool" id="resetBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>Vider</button>
+        <button class="tool" id="hintBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg><span>Indice <span class="cnt num" id="hintCnt"></span></span></button>
+        <button class="tool" id="pauseBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 5v14M15 5v14"/></svg>Pause</button>
+      </div>
+      <details class="howto" id="howto"><summary>Comment jouer</summary><p id="rules"></p></details>
+    </div>
+  </section>
+</div>
+<div class="overlay" id="sheet" hidden><div class="card" id="sheetCard"></div></div>
+<canvas id="confetti" hidden></canvas>
+
+<script>
+/* ---------- utilitaires ---------- */
+const rngOf=seed=>{let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}};
+const hash=s=>{let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const shuffle=(a,r)=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const range=n=>[...Array(n).keys()];
+const $=id=>document.getElementById(id);
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const today=()=>ymd(new Date());
+const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return ymd(d)};
+const LEVELS=150,PER=15;
+const TIERS=['Initiation','Débutant','Facile','Apprenti','Intermédiaire','Confirmé','Avancé','Difficile','Expert','Maître'];
+const tierOf=l=>Math.min(9,Math.floor((l-1)/PER));
+const DAILY_TIER=5;
+const adj=(n,a,b)=>{const dy=Math.abs((a/n|0)-(b/n|0)),dx=Math.abs(a%n-b%n);return dx+dy===1};
+const nbrs=(n,i)=>{const y=i/n|0,x=i%n,o=[];if(y>0)o.push(i-n);if(y<n-1)o.push(i+n);if(x>0)o.push(i-1);if(x<n-1)o.push(i+1);return o};
+/* chemin hamiltonien aléatoire (algorithme du « backbite ») */
+function hamPath(n,r){let path=[];for(let y=0;y<n;y++)for(let x=0;x<n;x++)path.push(y*n+(y%2?n-1-x:x));
+ for(let it=0;it<n*n*40;it++){if(r()<.5)path.reverse();const nb=nbrs(n,path[0]);const m=nb[Math.floor(r()*nb.length)];const k=path.indexOf(m);
+  if(k>1)path=path.slice(0,k).reverse().concat(path.slice(k))}return path}
+const BACK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>';
+
+/* ---------- icônes ---------- */
+const CROWN='<svg viewBox="0 0 24 24"><path d="M3 8l4.5 4L12 4l4.5 8L21 8l-2 11H5z" fill="var(--ink)"/></svg>';
+const SUN='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="var(--sun)" stroke="color-mix(in srgb,var(--sun) 60%,var(--ink))" stroke-width="1.5"/></svg>';
+const MOON='<svg viewBox="0 0 24 24"><path d="M15.5 3.2A9 9 0 1 0 20.8 17 7.6 7.6 0 0 1 15.5 3.2z" fill="var(--moon)" stroke="color-mix(in srgb,var(--moon) 60%,var(--ink))" stroke-width="1.5"/></svg>';
+const ICONS={
+ queens:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--r0)"/><path d="M22 1h11a10 10 0 0 1 10 10v11H22z" fill="var(--r1)"/><path d="M1 22h21v21H11A10 10 0 0 1 1 33z" fill="var(--r2)"/><path d="M6 11l3 2.6L11.5 8 14 13.6 17 11l-1.3 6.5H7.3z" fill="var(--ink)"/><path d="M27 32l3 2.6 2.5-5.6 2.5 5.6 3-2.6-1.3 6.5h-8.4z" fill="var(--ink)"/></svg>',
+ tango:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><circle cx="14" cy="22" r="7.5" fill="var(--sun)"/><path d="M31.5 13.5a8.5 8.5 0 1 0 5 14 7 7 0 0 1-5-14z" fill="var(--moon)"/></svg>',
+ zip:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><path d="M11 11h22v11H11v11h22" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="5" fill="var(--ink)"/><circle cx="33" cy="33" r="5" fill="var(--ink)"/></svg>',
+ sudoku:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><path d="M22 6v32M6 15.5h32M6 28.5h32" stroke="var(--line)" stroke-width="1.6"/><g font-size="10" text-anchor="middle" font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="700"><text x="14" y="13" fill="var(--ink)">4</text><text x="30" y="26" fill="var(--accent)">1</text><text x="14" y="38" fill="var(--ink)">6</text></g></svg>',
+ nono:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><g fill="var(--ink)"><rect x="16" y="16" width="7" height="7" rx="1"/><rect x="23" y="16" width="7" height="7" rx="1"/><rect x="30" y="23" width="7" height="7" rx="1"/><rect x="16" y="30" width="7" height="7" rx="1"/><rect x="23" y="30" width="7" height="7" rx="1"/><rect x="30" y="30" width="7" height="7" rx="1"/></g><g font-size="7" font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="700" fill="var(--muted)" text-anchor="middle"><text x="10" y="22">2</text><text x="10" y="29">1</text><text x="10" y="36">3</text><text x="20" y="12">2</text><text x="27" y="12">2</text><text x="34" y="12">2</text></g></svg>',
+ futo:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><rect x="6" y="13" width="13" height="18" rx="3" fill="var(--surface)"/><rect x="25" y="13" width="13" height="18" rx="3" fill="var(--surface)"/><g font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="800" text-anchor="middle"><text x="12.5" y="27" font-size="12" fill="var(--ink)">2</text><text x="31.5" y="27" font-size="12" fill="var(--accent)">4</text><text x="22" y="26.5" font-size="11" fill="var(--ink)">&lt;</text></g></svg>',
+ flow:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><path d="M11 11v22h10" fill="none" stroke="var(--f0)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 11h11v22" fill="none" stroke="var(--f1)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="5" fill="var(--f0)"/><circle cx="21" cy="33" r="5" fill="var(--f0)"/><circle cx="22" cy="11" r="5" fill="var(--f1)"/><circle cx="33" cy="33" r="5" fill="var(--f1)"/></svg>',
+ lights:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><g><rect x="7" y="7" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="17.75" y="7" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="28.5" y="7" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="7" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="17.75" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="28.5" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="7" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="17.75" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="28.5" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--line)"/></g></svg>'
+};
+const STAR=on=>`<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" fill="${on?'var(--gold)':'var(--soft)'}" stroke="${on?'var(--gold)':'var(--line)'}" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+const GEAR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+const FLAME='<svg class="flame" viewBox="0 0 24 24" fill="var(--sun)"><path d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3-1-3 0-6.5 1-9.5z"/></svg>';
+
+/* ======================= JEUX ======================= */
+
+/* ---------- Reines ---------- */
+function placeQueens(n,r){const cols=[];const used=new Array(n).fill(false);
+  const go=row=>{if(row===n)return true;for(const c of shuffle(range(n),r)){if(used[c])continue;if(row>0&&Math.abs(cols[row-1]-c)<2)continue;used[c]=true;cols[row]=c;if(go(row+1))return true;used[c]=false}return false};
+  go(0);return cols}
+function growRegions(n,cols,r){const reg=new Array(n*n).fill(-1);const act=[];
+  cols.forEach((c,i)=>{reg[i*n+c]=i;act.push(i*n+c)});
+  while(act.length){const k=Math.floor(r()*act.length),i=act[k];const nb=nbrs(n,i).filter(j=>reg[j]<0);
+    if(!nb.length){act[k]=act[act.length-1];act.pop();continue}
+    const j=nb[Math.floor(r()*nb.length)];reg[j]=reg[i];act.push(j)}
+  return reg}
+function countQueens(n,reg,limit){let cnt=0;
+  const go=(row,cm,rm,prev)=>{if(row===n){cnt++;return}
+    for(let c=0;c<n;c++){if(cm>>c&1)continue;if(prev>=0&&Math.abs(prev-c)<2)continue;const g=reg[row*n+c];if(rm>>g&1)continue;go(row+1,cm|1<<c,rm|1<<g,c);if(cnt>=limit)return}};
+  go(0,0,0,-1);return cnt}
+const Queens={key:'queens',name:'Reines',short:'Reines',icon:'queens',target:[25,35,45,60,75,95,120,150,190,240],
+ rules:'Place une reine par ligne, par colonne et par zone de couleur. Deux reines ne peuvent pas se toucher, même en diagonale. Touche une case une fois pour une croix, deux fois pour une reine. Glisse le doigt pour poser plusieurs croix d\'un coup.',
+ make(r,t){const n=[5,5,6,6,7,7,8,8,9,9][t];let last;for(let a=0;a<8000;a++){const sol=placeQueens(n,r);const reg=growRegions(n,sol,r);last={n,reg,sol};if(countQueens(n,reg,2)===1)break}return last},
+ init(p){return{c:new Array(p.n*p.n).fill(0)}},
+ check(p,st){const n=p.n,err=new Set(),q=[];st.c.forEach((v,i)=>{if(v===2)q.push(i)});
+  for(let a=0;a<q.length;a++)for(let b=a+1;b<q.length;b++){const i=q[a],j=q[b],ri=i/n|0,ci=i%n,rj=j/n|0,cj=j%n;
+   if(ri===rj||ci===cj||p.reg[i]===p.reg[j]||(Math.abs(ri-rj)<2&&Math.abs(ci-cj)<2)){err.add(i);err.add(j)}}
+  return{err,won:q.length===n&&!err.size,status:`Reines : ${q.length} / ${n}`}},
+ attacked(p,st){const n=p.n,s=new Set();st.c.forEach((v,q)=>{if(v!==2)return;const qr=q/n|0,qc=q%n;
+   for(let i=0;i<n*n;i++){if(i===q)continue;const r=i/n|0,c=i%n;if(r===qr||c===qc||p.reg[i]===p.reg[q]||(Math.abs(r-qr)<2&&Math.abs(c-qc)<2))s.add(i)}});return s},
+ render(el,p,st,res){const n=p.n;const g=grid(el,n);const att=S.set.autox?this.attacked(p,st):null;
+  const thick='2.5px solid var(--ink)',thin='1px solid color-mix(in srgb,var(--ink) 18%,transparent)';
+  for(let i=0;i<n*n;i++){const y=i/n|0,x=i%n;const b=document.createElement('button');
+   b.className='cell'+(res.err.has(i)?' err':'')+(att&&att.has(i)&&!st.c[i]?' auto':'');b.dataset.i=i;
+   b.style.background=`var(--r${p.reg[i]})`;
+   if(y>0)b.style.borderTop=p.reg[i]!==p.reg[i-n]?thick:thin;if(x>0)b.style.borderLeft=p.reg[i]!==p.reg[i-1]?thick:thin;
+   b.innerHTML=st.c[i]===2?CROWN:st.c[i]===1?'<span class="x">×</span>':'';
+   b.setAttribute('aria-label',`Ligne ${y+1}, colonne ${x+1}`);
+   b.onclick=e=>{if(e.detail===0)commit(s=>{s.c[i]=(s.c[i]+1)%3})};g.appendChild(b)}},
+ down(){return'drag'},
+ move(p,st,j,d){if(!d.moved){d.moved=true;if(!st.c[d.start])st.c[d.start]=1}if(!st.c[j])st.c[j]=1;return true},
+ up(p,st,d){if(d.moved)return false;st.c[d.start]=(st.c[d.start]+1)%3;return true},
+ hint(p,st){const n=p.n;const sol=new Set(p.sol.map((c,r)=>r*n+c));
+  const wrong=st.c.findIndex((v,i)=>v===2&&!sol.has(i));if(wrong>=0){st.c[wrong]=0;return}
+  for(const i of sol)if(st.c[i]!==2){st.c[i]=2;return}}
+};
+
+/* ---------- Soleil & Lune ---------- */
+function tangoSolve(n,giv,cons,limit,r){const h=n/2,g=new Array(n*n).fill(0);
+ const rs=Array.from({length:n},()=>[0,0,0]),cs=Array.from({length:n},()=>[0,0,0]);
+ const byB=Array.from({length:n*n},()=>[]);cons.forEach(c=>byB[c.b].push(c));
+ let cnt=0,first=null;
+ const ok=(i,v)=>{const y=i/n|0,x=i%n;if(rs[y][v]>=h||cs[x][v]>=h)return false;
+  if(x>=2&&g[i-1]===v&&g[i-2]===v)return false;if(y>=2&&g[i-n]===v&&g[i-2*n]===v)return false;
+  for(const k of byB[i]){const av=g[k.a];if(k.t==='='?av!==v:av===v)return false}return true};
+ const go=i=>{if(i===n*n){cnt++;if(!first)first=g.slice();return}
+  const vals=giv[i]?[giv[i]]:(r?(r()<.5?[1,2]:[2,1]):[1,2]);const y=i/n|0,x=i%n;
+  for(const v of vals){if(!ok(i,v))continue;g[i]=v;rs[y][v]++;cs[x][v]++;go(i+1);rs[y][v]--;cs[x][v]--;g[i]=0;if(cnt>=limit)return}};
+ go(0);return{cnt,first}}
+const Tango={key:'tango',name:'Soleil & Lune',short:'Soleil',icon:'tango',target:[30,40,50,60,75,90,130,160,200,240],
+ rules:'Remplis la grille de soleils et de lunes : chaque ligne et chaque colonne en contient autant des deux. Jamais plus de deux symboles identiques côte à côte. « = » relie deux cases identiques, « × » deux cases opposées.',
+ make(r,t){const n=t<6?6:8;const sol=tangoSolve(n,new Array(n*n).fill(0),[],1,r).first;
+  const pairs=[];for(let i=0;i<n*n;i++){const y=i/n|0,x=i%n;if(x<n-1)pairs.push([i,i+1]);if(y<n-1)pairs.push([i,i+n])}
+  let cons=shuffle(pairs,r).slice(0,[6,6,7,8,9,10,12,13,14,16][t]).map(([a,b])=>({a,b,t:sol[a]===sol[b]?'=':'x'}));
+  const giv=sol.slice();const minG=[16,13,11,9,7,5,20,15,10,6][t];let gc=n*n;
+  for(const i of shuffle(range(n*n),r)){if(gc<=minG)break;const v=giv[i];giv[i]=0;if(tangoSolve(n,giv,cons,2).cnt===1)gc--;else giv[i]=v}
+  const minC=[5,5,4,4,3,2,7,6,5,4][t];
+  for(const c of shuffle(cons.slice(),r)){if(cons.length<=minC)break;const rest=cons.filter(k=>k!==c);if(tangoSolve(n,giv,rest,2).cnt===1)cons=rest}
+  return{n,giv,cons,sol}},
+ init(p){return{c:p.giv.slice()}},
+ check(p,st){const n=p.n,h=n/2,c=st.c,err=new Set(),bad=new Set();
+  for(let k=0;k<n;k++){for(const v of[1,2]){const row=[],col=[];for(let j=0;j<n;j++){if(c[k*n+j]===v)row.push(k*n+j);if(c[j*n+k]===v)col.push(j*n+k)}
+    if(row.length>h)row.forEach(i=>err.add(i));if(col.length>h)col.forEach(i=>err.add(i))}}
+  for(let i=0;i<n*n;i++){const y=i/n|0,x=i%n;const v=c[i];if(!v)continue;
+   if(x<=n-3&&c[i+1]===v&&c[i+2]===v){err.add(i);err.add(i+1);err.add(i+2)}
+   if(y<=n-3&&c[i+n]===v&&c[i+2*n]===v){err.add(i);err.add(i+n);err.add(i+2*n)}}
+  p.cons.forEach((k,ix)=>{const a=c[k.a],b=c[k.b];if(a&&b&&(k.t==='='?a!==b:a===b)){err.add(k.a);err.add(k.b);bad.add(ix)}});
+  const filled=c.filter(v=>v).length;return{err,bad,won:filled===n*n&&!err.size,status:`Cases remplies : ${filled} / ${n*n}`}},
+ render(el,p,st,res){const n=p.n;const g=grid(el,n);
+  for(let i=0;i<n*n;i++){const b=document.createElement('button');const gv=!!p.giv[i];
+   b.className='cell'+(gv?' given':'')+(res.err.has(i)?' err':'');
+   if(i%n)b.style.borderLeft='1px solid var(--line)';if(i>=n)b.style.borderTop='1px solid var(--line)';
+   b.innerHTML=st.c[i]===1?SUN:st.c[i]===2?MOON:'';b.setAttribute('aria-label',`Case ${i+1}`);
+   if(!gv)b.onclick=()=>commit(s=>{s.c[i]=(s.c[i]+1)%3});g.appendChild(b)}
+  p.cons.forEach((k,ix)=>{const d=document.createElement('div');d.className='cons'+(res.bad.has(ix)?' bad':'');
+   const y=k.a/n|0,x=k.a%n,hz=k.b===k.a+1;d.style.left=((hz?x+1:x+.5)/n*100)+'%';d.style.top=((hz?y+.5:y+1)/n*100)+'%';
+   d.style.width=(42/n)+'%';d.textContent=k.t==='='?'=':'×';el.appendChild(d)})},
+ hint(p,st){const i0=st.c.findIndex((v,i)=>v&&v!==p.sol[i]);const i=i0>=0?i0:st.c.findIndex(v=>!v);if(i>=0)st.c[i]=p.sol[i]}
+};
+
+/* ---------- Fil ---------- */
+const Zip={key:'zip',name:'Fil',short:'Fil',icon:'zip',target:[20,25,35,45,55,70,85,100,120,150],
+ rules:'Trace un seul chemin qui passe par toutes les cases et relie les numéros dans l\'ordre. Pose le doigt sur le 1 et glisse. Reviens en arrière, ou touche une case du tracé, pour effacer la fin.',
+ make(r,t){const n=[5,5,6,6,7,7,8,8,9,9][t];const path=hamPath(n,r);
+  const m=[8,6,9,7,10,8,10,8,11,9][t];const L=n*n;const idx=new Set([0,L-1]);while(idx.size<m)idx.add(1+Math.floor(r()*(L-2)));
+  const nums={};[...idx].sort((a,b)=>a-b).forEach((ix,k)=>nums[path[ix]]=k+1);return{n,nums,K:m,sol:path}},
+ init(){return{path:[]}},
+ check(p,st){const last=st.path[st.path.length-1];return{err:new Set(),won:st.path.length===p.n*p.n&&p.nums[last]===p.K,status:`Cases parcourues : ${st.path.length} / ${p.n*p.n}`}},
+ maxK(p,path){let k=0;for(const i of path)if(p.nums[i])k=p.nums[i];return k},
+ canStep(p,path,j){const e=path[path.length-1];if(path.includes(j)||!adj(p.n,e,j))return false;
+  const mk=this.maxK(p,path);if(mk>=p.K)return false;if(p.nums[j]&&p.nums[j]!==mk+1)return false;return true},
+ render(el,p,st){const n=p.n;const g=grid(el,n);const inP=new Set(st.path);const mk=this.maxK(p,st.path);const end=st.path[st.path.length-1];
+  for(let i=0;i<n*n;i++){const c=document.createElement('div');c.className='cell';c.dataset.i=i;
+   if(i%n)c.style.borderLeft='1px solid var(--line)';if(i>=n)c.style.borderTop='1px solid var(--line)';
+   if(inP.has(i))c.style.background=i===end?'color-mix(in srgb,var(--accent) 32%,var(--surface))':'color-mix(in srgb,var(--accent) 16%,var(--surface))';
+   if(p.nums[i])c.innerHTML=`<span class="dot${p.nums[i]<=mk?' hit':''}">${p.nums[i]}</span>`;g.appendChild(c)}
+  if(st.path.length)svgPaths(el,n,[{cells:st.path,color:'var(--accent)'}])},
+ down(p,st,j){if(!st.path.length){if(p.nums[j]!==1)return'none';st.path.push(j);return'changed'}
+  if(st.path.includes(j)){st.path.length=st.path.indexOf(j)+1;return'changed'}
+  if(this.canStep(p,st.path,j)){st.path.push(j);return'changed'}return'none'},
+ move(p,st,j){if(j===st.path[st.path.length-1])return false;
+  if(j===st.path[st.path.length-2]){st.path.pop();return true}
+  if(this.canStep(p,st.path,j)){st.path.push(j);return true}return false},
+ hint(p,st){let k=0;while(k<st.path.length&&st.path[k]===p.sol[k])k++;let j=Math.max(k,1);while(j<p.sol.length-1&&!p.nums[p.sol[j]])j++;st.path=p.sol.slice(0,j+1)}
+};
+function svgPaths(el,n,list){const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('class','zipsvg');s.setAttribute('viewBox',`0 0 ${n} ${n}`);
+ s.innerHTML=list.filter(l=>l.cells.length>1).map(l=>`<polyline points="${l.cells.map(i=>`${i%n+.5},${(i/n|0)+.5}`).join(' ')}" fill="none" stroke="${l.color}" stroke-width="${l.w||.34}" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>`).join('');el.appendChild(s)}
+
+/* ---------- moteur commun des grilles à chiffres (Sudoku, Futoshiki) ---------- */
+const NumGame={
+ init(p){return{v:p.giv.slice(),notes:new Array(p.n*p.n).fill(0),sel:p.giv.findIndex(v=>!v)}},
+ cells(el,p,st,res,G){const n=p.n;const g=grid(el,n);const s=st.sel;const sv=s>=0?st.v[s]:0;
+  for(let i=0;i<n*n;i++){const y=i/n|0,x=i%n;const b=document.createElement('button');const gv=!!p.giv[i];
+   const cls=['cell'];if(gv)cls.push('given');else cls.push('sdk-user');
+   if(i===s)cls.push('sel');else if(sv&&st.v[i]===sv)cls.push('same');else if(s>=0&&G.peers(p,s,i)&&!gv)cls.push('peer');
+   if(res.err.has(i))cls.push('err');b.className=cls.join(' ');
+   const bd=G.borders(p,i);if(bd.l)b.style.borderLeft=bd.l;if(bd.t)b.style.borderTop=bd.t;
+   if(st.v[i])b.textContent=st.v[i];
+   else if(st.notes[i]){const cols=n<=6?3:3;b.innerHTML=`<span class="notes" style="grid-template-rows:repeat(${Math.ceil(n/cols)},1fr)">`+range(n).map(k=>`<span>${st.notes[i]>>(k+1)&1?k+1:''}</span>`).join('')+'</span>'}
+   b.setAttribute('aria-label',`Ligne ${y+1}, colonne ${x+1}`);
+   b.onclick=()=>{cur.st.sel=i;draw()};g.appendChild(b)}},
+ extra(box,p){const cols=p.n<=4?p.n+1:Math.ceil((p.n+1)/2);
+  box.innerHTML=`<div class="numpad"><div class="digits" style="grid-template-columns:repeat(${cols},1fr)">`+range(p.n).map(d=>`<button data-d="${d+1}" aria-label="Chiffre ${d+1}">${d+1}</button>`).join('')+
+   '<button class="erase" data-d="0" aria-label="Effacer la case"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H9l-6 7 6 7h12z"/><path d="M17 9l-6 6M11 9l6 6"/></svg></button></div>'+
+   '<button class="notebtn" id="noteBtn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Mode crayon</button></div>';
+  box.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>NumGame.put(+b.dataset.d));
+  $('noteBtn').onclick=()=>NumGame.toggleNotes()},
+ toggleNotes(){cur.noteMode=!cur.noteMode;const b=$('noteBtn');if(b)b.setAttribute('aria-pressed',cur.noteMode)},
+ put(d){const p=cur.p,s=cur.st.sel,G=cur.G;if(s<0||p.giv[s]||cur.done||cur.paused||d>p.n)return;
+  if(cur.noteMode&&d>0){if(cur.st.v[s])return;commit(st=>{st.notes[s]^=1<<d});return}
+  commit(st=>NumGame.place(p,st,s,d,G))},
+ place(p,st,s,d,G){st.v[s]=d;if(d){st.notes[s]=0;for(let j=0;j<p.n*p.n;j++)if(G.peers(p,s,j))st.notes[j]&=~(1<<d)}},
+ hint(p,st,G){let i=st.v.findIndex((v,i)=>v&&v!==p.sol[i]);if(i<0)i=st.sel>=0&&!st.v[st.sel]?st.sel:st.v.findIndex(v=>!v);
+  if(i>=0){NumGame.place(p,st,i,p.sol[i],G);st.sel=i}},
+ dupErr(p,st,G){const err=new Set(),v=st.v,N=p.n*p.n;for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){if(!v[i]||v[i]!==v[j])continue;
+   if(G.peers(p,i,j)){if(!p.giv[i])err.add(i);if(!p.giv[j])err.add(j)}}return err}
+};
+
+/* ---------- Sudoku (6×6 puis 9×9) ---------- */
+const sbox=(p,i)=>{const n=p.n,y=i/n|0,x=i%n;return Math.floor(y/p.br)*(n/p.bc)+Math.floor(x/p.bc)};
+function sdkSolve(p,giv,limit,r){const n=p.n,N=n*n,g=giv.slice(),R=new Array(n).fill(0),C=new Array(n).fill(0),B=new Array(n).fill(0);let cnt=0,first=null;
+ const bx=range(N).map(i=>sbox(p,i));
+ for(let i=0;i<N;i++)if(g[i]){const m=1<<g[i];R[i/n|0]|=m;C[i%n]|=m;B[bx[i]]|=m}
+ const go=()=>{let best=-1,bc=99,bm=0;
+  for(let i=0;i<N;i++){if(g[i])continue;const used=R[i/n|0]|C[i%n]|B[bx[i]];let c=0;for(let v=1;v<=n;v++)if(!(used>>v&1))c++;if(c<bc){bc=c;best=i;bm=used;if(c<=1)break}}
+  if(best<0){cnt++;if(!first)first=g.slice();return}if(bc===0)return;
+  const y=best/n|0,x=best%n,b=bx[best];const vals=range(n).map(v=>v+1);if(r)shuffle(vals,r);
+  for(const v of vals){const m=1<<v;if(bm&m)continue;g[best]=v;R[y]|=m;C[x]|=m;B[b]|=m;go();R[y]&=~m;C[x]&=~m;B[b]&=~m;g[best]=0;if(cnt>=limit)return}};
+ go();return{cnt,first}}
+const Sudoku={key:'sudoku',name:'Sudoku',short:'Sudoku',icon:'sudoku',target:[40,55,70,90,110,130,240,300,380,480],
+ rules:'Chaque ligne, chaque colonne et chaque bloc contient une seule fois chaque chiffre. Grilles de 6 × 6 jusqu\'au palier Confirmé, puis 9 × 9. Touche une case puis un chiffre ; le mode crayon note des candidats.',
+ make(r,t){const n=t<6?6:9;const p={n,br:n===6?2:3,bc:3};const sol=sdkSolve(p,new Array(n*n).fill(0),1,r).first;const giv=sol.slice();
+  let cl=n*n;const min=[22,19,17,15,13,11,36,32,28,25][t];
+  for(const i of shuffle(range(n*n),r)){if(cl<=min)break;const v=giv[i];giv[i]=0;if(sdkSolve(p,giv,2).cnt===1)cl--;else giv[i]=v}
+  return{...p,giv,sol}},
+ init:p=>NumGame.init(p),
+ peers(p,a,b){const n=p.n;return a!==b&&((a/n|0)===(b/n|0)||a%n===b%n||sbox(p,a)===sbox(p,b))},
+ borders(p,i){const n=p.n,y=i/n|0,x=i%n,T='2.5px solid var(--ink)',t='1px solid var(--line)';return{l:x?(x%p.bc===0?T:t):'',t:y?(y%p.br===0?T:t):''}},
+ check(p,st){const err=NumGame.dupErr(p,st,this);const f=st.v.filter(x=>x).length;return{err,won:f===p.n*p.n&&!err.size,status:`Cases remplies : ${f} / ${p.n*p.n}`}},
+ render(el,p,st,res){NumGame.cells(el,p,st,res,this)},
+ extra(box,p){NumGame.extra(box,p)},
+ hint(p,st){NumGame.hint(p,st,this)}
+};
+
+/* ---------- Futoshiki ---------- */
+function futoSolve(n,giv,ineq,limit){const N=n*n,g=giv.slice(),R=new Array(n).fill(0),C=new Array(n).fill(0);let cnt=0,first=null;
+ const rel=Array.from({length:N},()=>[]);ineq.forEach(q=>{rel[q.a].push({o:q.b,lt:q.t==='<'});rel[q.b].push({o:q.a,lt:q.t!=='<'})});
+ for(let i=0;i<N;i++)if(g[i]){R[i/n|0]|=1<<g[i];C[i%n]|=1<<g[i]}
+ const cand=i=>{let m=0,c=0;const used=R[i/n|0]|C[i%n];
+  for(let v=1;v<=n;v++){if(used>>v&1)continue;let ok=true;
+   for(const r of rel[i]){const ov=g[r.o];if(ov?(r.lt?v>=ov:v<=ov):(r.lt?v===n:v===1)){ok=false;break}}
+   if(ok){m|=1<<v;c++}}return[m,c]};
+ const go=()=>{let best=-1,bm=0,bc=99;
+  for(let i=0;i<N;i++){if(g[i])continue;const[m,c]=cand(i);if(c<bc){bc=c;best=i;bm=m;if(c<=1)break}}
+  if(best<0){cnt++;if(!first)first=g.slice();return}if(!bc)return;const y=best/n|0,x=best%n;
+  for(let v=1;v<=n;v++){if(!(bm>>v&1))continue;const m=1<<v;g[best]=v;R[y]|=m;C[x]|=m;go();R[y]&=~m;C[x]&=~m;g[best]=0;if(cnt>=limit)return}};
+ go();return{cnt,first}}
+const Futoshiki={key:'futo',name:'Futoshiki',short:'Futoshiki',icon:'futo',target:[30,40,55,70,90,110,140,170,220,280],
+ rules:'Chaque ligne et chaque colonne contient une seule fois les chiffres de 1 à N. Les signes entre deux cases doivent être respectés : la pointe du signe va vers le plus petit chiffre.',
+ make(r,t){const n=[4,4,5,5,5,6,6,6,7,7][t];
+  const base=range(n).map(y=>range(n).map(x=>(x+y)%n+1));const rows=shuffle(range(n),r),cols=shuffle(range(n),r),sym=shuffle(range(n).map(v=>v+1),r);
+  const sol=[];for(let y=0;y<n;y++)for(let x=0;x<n;x++)sol.push(sym[base[rows[y]][cols[x]]-1]);
+  const pairs=[];for(let i=0;i<n*n;i++){const y=i/n|0,x=i%n;if(x<n-1)pairs.push([i,i+1]);if(y<n-1)pairs.push([i,i+n])}
+  const minI=[6,5,8,7,6,9,8,7,10,9][t];
+  let ineq=shuffle(pairs,r).slice(0,Math.min(pairs.length,minI+10)).map(([a,b])=>({a,b,t:sol[a]<sol[b]?'<':'>'}));
+  const giv=sol.slice();let gc=n*n;const minG=[6,4,6,4,3,5,3,2,4,2][t];
+  for(const i of shuffle(range(n*n),r)){if(gc<=minG)break;const v=giv[i];giv[i]=0;if(futoSolve(n,giv,ineq,2).cnt===1)gc--;else giv[i]=v}
+  for(const q of shuffle(ineq.slice(),r)){if(ineq.length<=minI)break;const rest=ineq.filter(k=>k!==q);if(futoSolve(n,giv,rest,2).cnt===1)ineq=rest}
+  return{n,giv,ineq,sol}},
+ init:p=>NumGame.init(p),
+ peers(p,a,b){const n=p.n;return a!==b&&((a/n|0)===(b/n|0)||a%n===b%n)},
+ borders(p,i){const n=p.n;return{l:i%n?'1px solid var(--line)':'',t:i>=n?'1px solid var(--line)':''}},
+ check(p,st){const err=NumGame.dupErr(p,st,this),bad=new Set(),v=st.v;
+  p.ineq.forEach((q,ix)=>{const a=v[q.a],b=v[q.b];if(a&&b&&(q.t==='<'?!(a<b):!(a>b))){bad.add(ix);if(!p.giv[q.a])err.add(q.a);if(!p.giv[q.b])err.add(q.b)}});
+  const f=v.filter(x=>x).length;return{err,bad,won:f===p.n*p.n&&!err.size&&!bad.size,status:`Cases remplies : ${f} / ${p.n*p.n}`}},
+ render(el,p,st,res){NumGame.cells(el,p,st,res,this);const n=p.n;
+  p.ineq.forEach((q,ix)=>{const d=document.createElement('div');d.className='ineq'+(res.bad.has(ix)?' bad':'');const y=q.a/n|0,x=q.a%n,hz=q.b===q.a+1;
+   d.style.left=((hz?x+1:x+.5)/n*100)+'%';d.style.top=((hz?y+.5:y+1)/n*100)+'%';d.style.fontSize=`calc(min(100vw - 32px, 440px) / ${n} * .3)`;
+   d.textContent=hz?q.t:(q.t==='<'?'∧':'∨');el.appendChild(d)})},
+ extra(box,p){NumGame.extra(box,p)},
+ hint(p,st){NumGame.hint(p,st,this)}
+};
+
+/* ---------- Nonogramme ---------- */
+const clueOf=line=>{const o=[];let k=0;for(const v of line){if(v===1)k++;else if(k){o.push(k);k=0}}if(k)o.push(k);return o};
+function solveLine(clue,line){const L=line.length,canF=new Array(L).fill(false),canE=new Array(L).fill(false),curr=new Array(L).fill(0);let any=false;
+ const rest=[];for(let b=0;b<clue.length;b++){let s=0;for(let k=b+1;k<clue.length;k++)s+=clue[k]+1;rest.push(s)}
+ const rec=(b,pos)=>{if(b===clue.length){for(let i=pos;i<L;i++){if(line[i]===1)return;curr[i]=0}any=true;for(let i=0;i<L;i++){if(curr[i])canF[i]=true;else canE[i]=true}return}
+  const len=clue[b];
+  for(let s=pos;s+len+rest[b]<=L;s++){if(s>pos&&line[s-1]===1)break;if(s>pos)curr[s-1]=0;
+   let ok=true;for(let i=s;i<s+len;i++)if(line[i]===0){ok=false;break}
+   if(ok&&s+len<L&&line[s+len]===1)ok=false;
+   if(ok){for(let i=s;i<s+len;i++)curr[i]=1;if(s+len<L)curr[s+len]=0;rec(b+1,s+len+1)}}};
+ rec(0,0);if(!any)return null;return line.map((v,i)=>canF[i]&&!canE[i]?1:canE[i]&&!canF[i]?0:v)}
+function nonoSolve(n,rows,cols,fixed){const g=new Array(n*n).fill(-1);for(const i in fixed)g[i]=fixed[i];let changed=true;
+ while(changed){changed=false;
+  for(let y=0;y<n;y++){const line=g.slice(y*n,y*n+n);const nl=solveLine(rows[y],line);if(!nl)return null;for(let x=0;x<n;x++)if(nl[x]!==line[x]){g[y*n+x]=nl[x];changed=true}}
+  for(let x=0;x<n;x++){const line=range(n).map(y=>g[y*n+x]);const nl=solveLine(cols[x],line);if(!nl)return null;for(let y=0;y<n;y++)if(nl[y]!==line[y]){g[y*n+x]=nl[y];changed=true}}}
+ return g}
+const Nono={key:'nono',name:'Nonogramme',short:'Picross',icon:'nono',target:[30,40,55,75,100,130,170,210,280,340],
+ rules:'Les chiffres indiquent, dans l\'ordre, la longueur des suites de cases noires de chaque ligne et de chaque colonne. Touche une case une fois pour la noircir, deux fois pour une croix. Glisse pour en faire plusieurs d\'un coup.',
+ make(r,t){const n=[5,5,6,7,8,9,10,10,12,12][t],dens=[.62,.56,.56,.55,.55,.53,.53,.5,.5,.48][t];let best=null;
+  for(let a=0;a<40;a++){const sol=range(n*n).map(()=>r()<dens?1:0);
+   const rows=range(n).map(y=>clueOf(sol.slice(y*n,y*n+n))),cols=range(n).map(x=>clueOf(range(n).map(y=>sol[y*n+x])));
+   const g=nonoSolve(n,rows,cols,{});const unk=g.filter(v=>v<0).length;if(!best||unk<best.unk)best={sol,rows,cols,unk,g};if(!unk)break}
+  const fixed={};let g=best.g;
+  while(g.some(v=>v<0)){const u=range(n*n).filter(i=>g[i]<0&&best.sol[i]===1);const pool=u.length?u:range(n*n).filter(i=>g[i]<0);const i=pool[Math.floor(r()*pool.length)];fixed[i]=best.sol[i];g=nonoSolve(n,best.rows,best.cols,fixed)}
+  const giv=range(n*n).map(i=>fixed[i]===1?1:0);
+  return{n,rows:best.rows,cols:best.cols,sol:best.sol,giv}},
+ init(p){return{c:p.giv.slice()}},
+ lines(p,st){const n=p.n,f=st.c.map(v=>v===1?1:0);const rOk=range(n).map(y=>''+clueOf(f.slice(y*n,y*n+n))===''+p.rows[y]);
+  const cOk=range(n).map(x=>''+clueOf(range(n).map(y=>f[y*n+x]))===''+p.cols[x]);return{rOk,cOk}},
+ check(p,st){const{rOk,cOk}=this.lines(p,st);const done=rOk.filter(Boolean).length+cOk.filter(Boolean).length;
+  return{err:new Set(),rOk,cOk,won:rOk.every(Boolean)&&cOk.every(Boolean),status:`Lignes et colonnes justes : ${done} / ${2*p.n}`}},
+ dims(p){const cw=Math.max(1.6,Math.max(...p.rows.map(c=>c.length||1))*.62+.4),ch=Math.max(1.6,Math.max(...p.cols.map(c=>c.length||1))*.68+.4);return{cw,ch}},
+ aspect(p){const{cw,ch}=this.dims(p);return`${p.n+cw} / ${p.n+ch}`},
+ render(el,p,st,res){const n=p.n,{cw,ch}=this.dims(p);const g=document.createElement('div');g.className='ngrid';
+  g.style.gridTemplateColumns=`${cw}fr repeat(${n},1fr)`;g.style.gridTemplateRows=`${ch}fr repeat(${n},1fr)`;
+  g.style.fontSize=`calc(min(100vw - 32px, 440px) / ${n+cw} * .5)`;
+  const T='2.5px solid var(--ink)',t='1px solid var(--line)';
+  g.appendChild(document.createElement('div'));
+  for(let x=0;x<n;x++){const d=document.createElement('div');d.className='clue col'+(res.cOk[x]?' done':'');d.innerHTML=(p.cols[x].length?p.cols[x]:[0]).map(v=>`<span>${v}</span>`).join('');g.appendChild(d)}
+  for(let y=0;y<n;y++){const d=document.createElement('div');d.className='clue'+(res.rOk[y]?' done':'');d.innerHTML=(p.rows[y].length?p.rows[y]:[0]).map(v=>`<span>${v}</span>`).join('');g.appendChild(d);
+   for(let x=0;x<n;x++){const i=y*n+x,v=st.c[i];const c=document.createElement('div');c.dataset.i=i;
+    c.className='cell'+(p.giv[i]?' lock':v===1?' fill':'');
+    c.style.borderLeft=x===0?T:(x%5===0?'2px solid var(--ink)':t);c.style.borderTop=y===0?T:(y%5===0?'2px solid var(--ink)':t);
+    if(x===n-1)c.style.borderRight=T;if(y===n-1)c.style.borderBottom=T;
+    if(v===2)c.innerHTML='<span class="x">×</span>';g.appendChild(c)}}
+  el.appendChild(g)},
+ down(p,st,j,d){if(p.giv[j])return'none';d.val=(st.c[j]+1)%3;st.c[j]=d.val;return'changed'},
+ move(p,st,j,d){if(p.giv[j]||st.c[j]===d.val)return false;st.c[j]=d.val;return true},
+ hint(p,st){let i=st.c.findIndex((v,i)=>v===1&&!p.sol[i]);if(i>=0){st.c[i]=2;return}
+  i=st.c.findIndex((v,i)=>v!==1&&p.sol[i]);if(i>=0)st.c[i]=1}
+};
+
+/* ---------- Flux ---------- */
+const Flow={key:'flow',name:'Flux',short:'Flux',icon:'flow',target:[20,25,35,45,55,65,80,95,110,130],
+ rules:'Relie chaque paire de pastilles de même couleur par un tuyau. Les tuyaux ne se croisent pas et doivent remplir toute la grille. Glisse depuis une pastille ; passer sur un autre tuyau le coupe.',
+ make(r,t){const n=[5,5,6,6,7,7,8,8,9,9][t],k=[4,5,5,6,6,7,7,8,8,9][t];const L=n*n;let segs;
+  for(let a=0;a<60;a++){const path=hamPath(n,r);const lens=new Array(k).fill(3);for(let s=0;s<L-3*k;s++)lens[Math.floor(r()*k)]++;
+   segs=[];let o=0;for(const l of lens){segs.push(path.slice(o,o+l));o+=l}
+   if(segs.every(s=>!adj(n,s[0],s[s.length-1])))break}
+  const ends={};segs.forEach((s,c)=>{ends[s[0]]=c;ends[s[s.length-1]]=c});return{n,k,segs,ends}},
+ init(p){return{paths:range(p.k).map(()=>[])}},
+ complete(p,path,c){if(path.length<2)return false;const s=p.segs[c];const e=[s[0],s[s.length-1]];return e.includes(path[0])&&e.includes(path[path.length-1])&&path[0]!==path[path.length-1]},
+ check(p,st){const done=st.paths.filter((pa,c)=>this.complete(p,pa,c)).length;const cov=new Set(st.paths.flat()).size;
+  return{err:new Set(),won:done===p.k&&cov===p.n*p.n,status:`Tuyaux : ${done} / ${p.k} · remplissage ${Math.round(cov/(p.n*p.n)*100)} %`}},
+ render(el,p,st){const n=p.n;const g=grid(el,n);const owner={};st.paths.forEach((pa,c)=>pa.forEach(i=>owner[i]=c));
+  for(let i=0;i<n*n;i++){const c=document.createElement('div');c.className='cell';c.dataset.i=i;
+   if(i%n)c.style.borderLeft='1px solid var(--line)';if(i>=n)c.style.borderTop='1px solid var(--line)';
+   if(owner[i]!==undefined)c.style.background=`color-mix(in srgb,var(--f${owner[i]}) 20%,var(--surface))`;
+   if(p.ends[i]!==undefined)c.innerHTML=`<span class="pip" style="background:var(--f${p.ends[i]})"></span>`;g.appendChild(c)}
+  svgPaths(el,n,st.paths.map((pa,c)=>({cells:pa,color:`var(--f${c})`,w:.3})))},
+ cut(st,j,except){st.paths.forEach((pa,o)=>{if(o===except)return;const q=pa.indexOf(j);if(q>=0)pa.length=q})},
+ down(p,st,j,d){if(p.ends[j]!==undefined){const c=p.ends[j];st.paths[c]=[j];d.color=c;return'changed'}
+  const c=st.paths.findIndex(pa=>pa.includes(j));if(c<0)return'none';const pa=st.paths[c];pa.length=pa.indexOf(j)+1;d.color=c;return'changed'},
+ move(p,st,j,d){const c=d.color,pa=st.paths[c],end=pa[pa.length-1];if(j===end)return false;
+  const k=pa.indexOf(j);if(k>=0){pa.length=k+1;return true}
+  if(this.complete(p,pa,c)||!adj(p.n,end,j))return false;
+  if(p.ends[j]!==undefined&&p.ends[j]!==c)return false;
+  this.cut(st,j,c);pa.push(j);return true},
+ hint(p,st){const c=range(p.k).find(c=>{const pa=st.paths[c],s=p.segs[c];return!(pa.length===s.length&&this.complete(p,pa,c)&&pa.every(i=>s.includes(i)))});
+  if(c===undefined)return;const s=p.segs[c];s.forEach(j=>this.cut(st,j,c));st.paths[c]=s.slice()}
+};
+
+/* ---------- Lumières ---------- */
+const Lights={key:'lights',name:'Lumières',short:'Lumières',icon:'lights',target:[15,20,30,40,50,60,75,90,110,130],
+ rules:'Toucher une lampe inverse son état et celui de ses voisines directes (haut, bas, gauche, droite). Éteins toutes les lampes.',
+ make(r,t){const n=[3,4,4,5,5,5,6,6,7,7][t],k=[3,4,6,6,8,10,11,13,15,18][t];let pr,on;
+  do{pr=new Array(n*n).fill(0);shuffle(range(n*n),r).slice(0,k).forEach(i=>pr[i]=1);on=new Array(n*n).fill(0);
+   pr.forEach((v,i)=>{if(v)[i,...nbrs(n,i)].forEach(j=>on[j]^=1)})}while(!on.some(v=>v));
+  return{n,on,pr}},
+ init(p){return{on:p.on.slice(),pr:new Array(p.n*p.n).fill(0),moves:0}},
+ press(p,st,i){[i,...nbrs(p.n,i)].forEach(j=>st.on[j]^=1);st.pr[i]^=1;st.moves++},
+ check(p,st){const lit=st.on.filter(v=>v).length;return{err:new Set(),won:!lit,status:`Lampes allumées : ${lit} · coups : ${st.moves}`}},
+ render(el,p,st){const n=p.n;const g=document.createElement('div');g.className='lampgrid';g.style.gridTemplateColumns=`repeat(${n},1fr)`;g.style.gridTemplateRows=`repeat(${n},1fr)`;
+  for(let i=0;i<n*n;i++){const b=document.createElement('button');b.className='lamp'+(st.on[i]?' on':'');b.setAttribute('aria-label',`Lampe ${i+1}, ${st.on[i]?'allumée':'éteinte'}`);
+   b.onclick=()=>commit(s=>this.press(p,s,i));g.appendChild(b)}el.appendChild(g)},
+ hint(p,st){const i=range(p.n*p.n).find(i=>p.pr[i]^st.pr[i]);if(i!==undefined)this.press(p,st,i)}
+};
+
+const GAMES={queens:Queens,tango:Tango,zip:Zip,sudoku:Sudoku,nono:Nono,futo:Futoshiki,flow:Flow,lights:Lights};
+const ORDER=['queens','tango','zip','sudoku','nono','futo','flow','lights'];
+
+/* ---------- sauvegarde ---------- */
+const KEY='grilles-du-soir.v1';
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+const fresh=()=>({ver:2,p:{},daily:{date:'',done:{}},streak:{n:0,last:''},solved:0,flags:{},saved:{},seen:{},set:{zen:false,autox:true,vibe:true}});
+if(!S)S=fresh();
+function normalize(){const f=fresh();if(S.ver!==2){S.saved={};S.ver=2}
+ for(const k in f)if(S[k]===undefined)S[k]=f[k];for(const k in f.set)if(S.set[k]===undefined)S.set[k]=f.set[k];
+ ORDER.forEach(k=>{if(!S.p[k])S.p[k]={level:1,stars:{},best:{}}});
+ for(const id in S.saved)if(id.startsWith('d:')&&!id.startsWith('d:'+today()))delete S.saved[id]}
+normalize();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const dailyDone=()=>S.daily.date===today()?S.daily.done:{};
+const idOf=(k,l,d)=>d?`d:${today()}:${k}`:`${k}:${l}`;
+
+/* ---------- moteur de partie ---------- */
+let cur=null,tick=null;
+function grid(el,n){const g=document.createElement('div');g.className='grid';g.style.gridTemplateColumns=`repeat(${n},1fr)`;g.style.gridTemplateRows=`repeat(${n},1fr)`;
+ g.style.fontSize=`calc(min(100vw - 32px, 440px) / ${n} * .46)`;el.appendChild(g);return g}
+const elapsedMs=()=>cur.acc+(cur.since?Date.now()-cur.since:0);
+const elapsed=()=>Math.floor(elapsedMs()/1000);
+function starsFor(secs,hints,T){let s=3;if(!S.set.zen){if(secs>T)s--;if(secs>T*2)s--}return Math.max(1,s-hints)}
+function stopClock(){if(cur&&cur.since){cur.acc+=Date.now()-cur.since;cur.since=null}}
+function runClock(){if(cur&&!cur.since&&!cur.done&&!cur.paused&&cur.p)cur.since=Date.now()}
+function persist(){if(!cur||cur.done||!cur.p)return;S.saved[cur.id]={st:cur.st,hints:cur.hints,acc:elapsedMs()};save()}
+function start(key,level,daily){const G=GAMES[key];const t=daily?DAILY_TIER:tierOf(level);
+ clearInterval(tick);cur={key,G,level,daily,t,p:null,id:idOf(key,level,daily),hist:[],hints:0,acc:0,since:null,done:false,paused:false,noteMode:false};
+ $('pTitle').textContent=G.name;$('pSub').textContent=daily?'Défi du jour · '+TIERS[t]:`Niveau ${level} / ${LEVELS} · ${TIERS[t]}`;
+ $('rules').textContent=G.rules;$('howto').open=!S.seen[key];S.seen[key]=true;save();
+ $('pauseCover').hidden=true;$('sheet').hidden=true;$('extra').innerHTML='';$('status').textContent='';$('timer').textContent='0:00';$('live').innerHTML='';
+ const b=$('board');b.style.aspectRatio='1';b.innerHTML='<div class="loading">Préparation de la grille…</div>';
+ ['undoBtn','resetBtn','hintBtn','pauseBtn'].forEach(id=>$(id).disabled=true);show('play');
+ const mine=cur;
+ setTimeout(()=>{if(cur!==mine)return;
+  const p=G.make(rngOf(hash(daily?`jour:${today()}:${key}`:`${key}:${level}`)),t);
+  const sv=S.saved[mine.id];let st=sv?sv.st:G.init(p);
+  if(st.notes===undefined&&G.init(p).notes)st.notes=new Array(p.n*p.n).fill(0);
+  Object.assign(cur,{p,st,hints:sv?sv.hints:0,acc:sv?sv.acc:0,since:Date.now()});
+  if(G.extra)G.extra($('extra'),p);
+  draw();tick=setInterval(updTimer,500);updTimer()},30)}
+function updTimer(){if(!cur||!cur.p)return;const secs=elapsed();$('timer').textContent=S.set.zen?'Zen':fmt(secs);
+ const s=starsFor(secs,cur.hints,cur.G.target[cur.t]);$('live').innerHTML=[1,2,3].map(k=>STAR(k<=s)).join('');
+ $('hintCnt').textContent=cur.hints?'· '+cur.hints:''}
+function draw(){const b=$('board');b.innerHTML='';b.style.aspectRatio=cur.G.aspect?cur.G.aspect(cur.p):'1';
+ const res=cur.G.check(cur.p,cur.st);cur.G.render(b,cur.p,cur.st,res);$('status').textContent=res.status||'';
+ const off=cur.done||cur.paused;$('undoBtn').disabled=!cur.hist.length||off;$('hintBtn').disabled=off;$('resetBtn').disabled=off;$('pauseBtn').disabled=cur.done;return res}
+const snapshot=()=>JSON.stringify(cur.st);
+function commit(fn){if(!cur.p||cur.done||cur.paused)return;cur.hist.push(snapshot());fn(cur.st);after()}
+function after(){const res=draw();if(res.won)finish();else persist()}
+function setPaused(v){if(!cur||cur.done||!cur.p)return;cur.paused=v;if(v)stopClock();else runClock();$('pauseCover').hidden=!v;draw();persist()}
+$('undoBtn').onclick=()=>{if(!cur.hist.length)return;cur.st=JSON.parse(cur.hist.pop());draw();persist()};
+$('resetBtn').onclick=()=>{cur.hist.push(snapshot());const sel=cur.st.sel;cur.st=cur.G.init(cur.p);if(sel!==undefined)cur.st.sel=sel;draw();persist()};
+$('hintBtn').onclick=()=>{cur.hints++;updTimer();commit(st=>cur.G.hint(cur.p,st))};
+$('pauseBtn').onclick=()=>setPaused(true);
+$('resumeBtn').onclick=()=>setPaused(false);
+$('backBtn').onclick=()=>{stopClock();persist();clearInterval(tick);const k=cur.key,d=cur.daily;cur=null;d?renderHome():openLevels(k)};
+document.addEventListener('visibilitychange',()=>{if(!cur)return;if(document.hidden){stopClock();persist()}else runClock()});
+
+/* gestes glissés : tracés (Fil, Flux) et peinture (Reines, Nonogramme) */
+let drag=null;
+const cellAt=e=>{const el=document.elementFromPoint(e.clientX,e.clientY);const c=el&&el.closest('.cell');return c&&c.dataset.i!==undefined?+c.dataset.i:-1};
+const board=$('board');
+function dragChanged(){if(!drag.pushed){cur.hist.push(drag.snap);drag.pushed=true}const res=draw();if(res.won){drag=null;finish()}}
+board.addEventListener('pointerdown',e=>{if(!cur||!cur.p||cur.done||cur.paused||!cur.G.down)return;const j=cellAt(e);if(j<0)return;
+ drag={start:j,last:j,moved:false,snap:snapshot(),pushed:false};
+ const r=cur.G.down(cur.p,cur.st,j,drag);if(r==='none'){drag=null;return}
+ board.setPointerCapture(e.pointerId);e.preventDefault();if(r==='changed')dragChanged()});
+board.addEventListener('pointermove',e=>{if(!drag||!cur||cur.done)return;const j=cellAt(e);if(j<0||j===drag.last)return;drag.last=j;
+ if(cur.G.move(cur.p,cur.st,j,drag))dragChanged()});
+board.addEventListener('pointerup',()=>{if(!drag)return;const d=drag;drag=null;if(!cur||cur.done)return;
+ if(cur.G.up&&cur.G.up(cur.p,cur.st,d)){if(!d.pushed)cur.hist.push(d.snap);after()}else persist()});
+board.addEventListener('pointercancel',()=>{drag=null;persist()});
+
+document.addEventListener('keydown',e=>{if(!cur||!cur.p||!cur.G.extra||$('play').hidden)return;const n=cur.p.n;
+ if(/^[1-9]$/.test(e.key))NumGame.put(+e.key);else if(e.key==='Backspace'||e.key==='Delete'||e.key==='0')NumGame.put(0);
+ else if(e.key==='n'||e.key==='N')NumGame.toggleNotes();
+ else{const d={ArrowLeft:-1,ArrowRight:1,ArrowUp:-n,ArrowDown:n}[e.key];if(d){const s=cur.st.sel<0?0:cur.st.sel;const m=s+d;if(m>=0&&m<n*n){cur.st.sel=m;draw();e.preventDefault()}}}});
+
+/* confettis */
+function confetti(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const cv=$('confetti');cv.hidden=false;
+ const dpr=devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+ const cs=getComputedStyle(document.documentElement);const cols=['--accent','--sun','--moon','--gold','--f0','--f7'].map(v=>cs.getPropertyValue(v).trim());
+ const ps=Array.from({length:140},()=>({x:innerWidth/2,y:innerHeight*.42,vx:(Math.random()-.5)*12,vy:-Math.random()*13-3,r:Math.random()*Math.PI,vr:(Math.random()-.5)*.4,w:6+Math.random()*6,h:4+Math.random()*4,c:cols[Math.floor(Math.random()*cols.length)]}));
+ const t0=performance.now();const step=t=>{const k=(t-t0)/1600;ctx.clearRect(0,0,innerWidth,innerHeight);
+  for(const p of ps){p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;ctx.save();ctx.globalAlpha=Math.max(0,1-k);ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore()}
+  if(k<1)requestAnimationFrame(step);else cv.hidden=true};requestAnimationFrame(step)}
+
+/* fin de partie */
+const STREAK_MIN=4;
+function finish(){cur.done=true;stopClock();clearInterval(tick);updTimer();draw();const secs=elapsed();const T=cur.G.target[cur.t];
+ const stars=starsFor(secs,cur.hints,T);delete S.saved[cur.id];
+ S.solved++;if(secs<=15)S.flags.eclair=true;if(cur.t===9&&stars===3&&!cur.daily&&!S.set.zen)S.flags.perfect=true;
+ let msg='',best=false;
+ if(cur.daily){if(S.daily.date!==today())S.daily={date:today(),done:{}};S.daily.done[cur.key]=true;
+  const nd=ORDER.filter(k=>S.daily.done[k]).length;if(nd>=4)S.flags.quatuor=true;if(nd===ORDER.length)S.flags.chelem=true;
+  if(nd>=STREAK_MIN&&S.streak.last!==today()){S.streak.n=S.streak.last===yesterday()?S.streak.n+1:1;S.streak.last=today();S.flags.best=Math.max(S.flags.best||0,S.streak.n);
+   msg=`Journée validée : série de ${S.streak.n} jour${S.streak.n>1?'s':''}.`}
+  else if(nd<STREAK_MIN)msg=`Encore ${STREAK_MIN-nd} défi${STREAK_MIN-nd>1?'s':''} pour valider la journée.`;
+  else msg=nd===ORDER.length?'Les huit défis du jour sont faits.':`${nd} défis sur ${ORDER.length} aujourd'hui.`}
+ else{const rec=S.p[cur.key];const prev=rec.best[cur.level];best=prev!==undefined&&secs<prev;
+  rec.stars[cur.level]=Math.max(rec.stars[cur.level]||0,stars);rec.best[cur.level]=Math.min(prev??1e9,secs);
+  if(cur.level>=rec.level)rec.level=cur.level+1;
+  msg=cur.hints?`${cur.hints} indice${cur.hints>1?'s':''} utilisé${cur.hints>1?'s':''}.`:S.set.zen?'Mode zen : le temps ne compte pas.':secs>T?`Objectif 3 étoiles : ${fmt(T)}.`:'Sous l\'objectif de temps.';
+  if(cur.level===LEVELS)msg+=' Tu as terminé les 150 niveaux ! Les suivants sont des grilles Maître en bonus.';
+  else if(tierOf(cur.level+1)>cur.t)msg+=` Palier ${TIERS[tierOf(cur.level+1)]} débloqué.`}
+ save();try{if(S.set.vibe&&navigator.vibrate)navigator.vibrate([30,50,70])}catch(e){}
+ const k=cur.key,l=cur.level,daily=cur.daily;
+ const nextDaily=daily?ORDER.find(g=>!dailyDone()[g]):null;
+ sheet(`<div class="eyebrow">${daily?'Défi du jour':'Niveau '+l} · ${GAMES[k].name}</div><h2>Résolu en <span class="num">${fmt(secs)}</span></h2>
+  ${best?'<span class="newbest">Nouveau record</span>':''}
+  <div class="stars">${[1,2,3].map(n=>STAR(n<=stars)).join('')}</div><p style="margin:0;color:var(--muted)">${msg}</p>
+  <div class="row">${daily?(nextDaily?`<button class="btn primary" id="wNextD">Défi suivant : ${GAMES[nextDaily].short}</button>`:'')+'<button class="btn ghost" id="wHome">Accueil</button>':'<button class="btn primary" id="wNext">Niveau suivant</button><button class="btn ghost" id="wHome">Accueil</button>'}
+  <button class="btn link" id="wView">Voir la grille</button></div>`,450,()=>{
+  if($('wNext'))$('wNext').onclick=()=>start(k,l+1,false);
+  if($('wNextD'))$('wNextD').onclick=()=>start(nextDaily,0,true);
+  $('wHome').onclick=()=>{$('sheet').hidden=true;cur=null;renderHome()};
+  $('wView').onclick=()=>{$('sheet').hidden=true}});
+ setTimeout(confetti,300)}
+function sheet(html,delay,bind){$('sheetCard').innerHTML=html;setTimeout(()=>{$('sheet').hidden=false;bind&&bind()},delay||0)}
+
+/* réglages */
+function openSettings(){const row=(id,t,s)=>`<div class="setting"><div><b>${t}</b><small>${s}</small></div><button class="switch" role="switch" aria-label="${t}" aria-checked="${S.set[id]}" data-set="${id}"></button></div>`;
+ sheet(`<h2 style="font-size:24px">Réglages</h2><div>
+  ${row('zen','Mode zen','Cache le chrono. Les étoiles ne dépendent que des indices.')}
+  ${row('autox','Repères automatiques','Reines : un point grisé montre les cases déjà bloquées.')}
+  ${row('vibe','Vibration','Une petite vibration quand une grille est résolue.')}
+  <div class="setting"><div><b>Transférer</b><small>Copie ta progression vers un autre appareil ou l'appli installée.</small></div><button class="btn ghost" id="xfer">Ouvrir</button></div>
+  <div class="setting"><div><b>Progression</b><small>Niveaux, étoiles, badges et série.</small></div><button class="btn ghost" id="wipe">Effacer</button></div></div>
+  <button class="btn primary" id="closeSet">Fermer</button>`,0,()=>{
+  $('xfer').onclick=openTransfer;
+  $('sheetCard').querySelectorAll('[data-set]').forEach(b=>b.onclick=()=>{const id=b.dataset.set;S.set[id]=!S.set[id];b.setAttribute('aria-checked',S.set[id]);save()});
+  $('wipe').onclick=e=>{const b=e.currentTarget;if(b.dataset.armed){const set=S.set;S=fresh();S.set=set;normalize();save();$('sheet').hidden=true;renderHome();return}
+   b.dataset.armed='1';b.textContent='Confirmer';b.className='btn danger'};
+  $('closeSet').onclick=()=>{$('sheet').hidden=true;renderHome()}})}
+const encodeSave=()=>'GDS1.'+btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+function decodeSave(txt){const m=(txt||'').replace(/\s+/g,'').match(/GDS1\.([A-Za-z0-9+/=]+)/);if(!m)return null;
+ try{const o=JSON.parse(decodeURIComponent(escape(atob(m[1]))));return o&&o.p?o:null}catch(e){return null}}
+function openTransfer(){const code=encodeSave();
+ sheet(`<h2 style="font-size:24px">Transférer</h2>
+  <p style="margin:0;color:var(--muted);font-size:14px;text-align:left">1. Copie ce code sur l'appareil de départ.<br>2. Sur l'autre appareil, ouvre Réglages › Transférer, colle-le et importe.</p>
+  <textarea id="xOut" readonly rows="3" style="width:100%;font:12px/1.3 ui-monospace,monospace;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--bg);color:var(--ink);resize:none">${code}</textarea>
+  <button class="btn primary" id="xCopy">Copier mon code</button>
+  <textarea id="xIn" rows="3" placeholder="Colle ici un code GDS1…" style="width:100%;font:12px/1.3 ui-monospace,monospace;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--surface);color:var(--ink);resize:none"></textarea>
+  <button class="btn ghost" id="xImp">Importer ce code</button>
+  <p id="xMsg" style="margin:0;font-size:13px;color:var(--muted);min-height:18px"></p>
+  <button class="btn link" id="xClose">Fermer</button>`,0,()=>{
+  const msg=t=>$('xMsg').textContent=t;
+  $('xCopy').onclick=()=>{const ta=$('xOut');const fb=()=>{ta.focus();ta.select();msg('Code sélectionné : copie-le avec le menu de ton téléphone.')};
+   try{navigator.clipboard.writeText(code).then(()=>msg('Code copié.'),fb)}catch(e){fb()}};
+  $('xImp').onclick=e=>{const o=decodeSave($('xIn').value);if(!o){msg('Ce code n\'est pas reconnu. Vérifie qu\'il commence par GDS1 et qu\'il est complet.');return}
+   const b=e.currentTarget;if(!b.dataset.armed){b.dataset.armed='1';b.textContent='Confirmer : remplacer ma progression';b.className='btn danger';msg(`Code valide : ${o.solved||0} grilles résolues.`);return}
+   S=o;normalize();save();$('sheet').hidden=true;renderHome()};
+  $('xClose').onclick=()=>{$('sheet').hidden=true}})}
+$('sheet').addEventListener('click',e=>{if(e.target===$('sheet')&&!(cur&&cur.done))$('sheet').hidden=true});
+
+/* ---------- écrans ---------- */
+function show(id){['home','levelsView','play'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0)}
+function totalStars(k){return Object.values(S.p[k].stars).reduce((a,b)=>a+b,0)}
+function badgeList(){const lv=ORDER.map(k=>S.p[k].level-1);return[
+ ['1','Premier pas','1 grille',S.solved>=1],['25','Habitué','25 grilles',S.solved>=25],['100','Marathon','100 grilles',S.solved>=100],
+ ['500','Infatigable','500 grilles',S.solved>=500],['4','Quatuor','4 défis en un jour',!!S.flags.quatuor],['8','Grand chelem','8 défis en un jour',!!S.flags.chelem],
+ ['3j','Régulier','Série de 3 jours',(S.flags.best||0)>=3],['7j','Assidu','Série de 7 jours',(S.flags.best||0)>=7],['15s','Éclair','Une grille en 15 s',!!S.flags.eclair],
+ ['10','Polyvalent','Niveau 10 dans les 8 jeux',lv.every(v=>v>=10)],['★','Sans faute','3 étoiles en Maître',!!S.flags.perfect],['150','Encyclopédiste','150 niveaux d\'un jeu',lv.some(v=>v>=150)]]}
+function renderHome(){const dd=dailyDone();const st=S.streak.last===today()||S.streak.last===yesterday()?S.streak.n:0;
+ const d=new Date().toLocaleDateString('fr-BE',{weekday:'long',day:'numeric',month:'long'});
+ const nDone=ORDER.filter(k=>dd[k]).length;const badges=badgeList();
+ const head=nDone===ORDER.length?'Les huit sont faits, à demain.':nDone>=STREAK_MIN?`Journée validée · ${nDone} sur ${ORDER.length}`:`${nDone} sur ${ORDER.length} · ${STREAK_MIN} pour valider la journée`;
+ $('home').innerHTML=`<header class="masthead"><span></span><div><div class="eyebrow">${d}</div><h1>Grilles du soir</h1></div>
+  <button class="iconbtn" id="setBtn" aria-label="Réglages">${GEAR}</button></header>
+ <div class="daily"><div><div class="eyebrow">Défis du jour · ${TIERS[DAILY_TIER]}</div><h2>${head}</h2></div>
+  <div class="daily-row">${ORDER.map(k=>{const going=!dd[k]&&S.saved[idOf(k,0,true)];return`<button class="dchip${dd[k]?' done':''}" data-daily="${k}">${ICONS[GAMES[k].icon]}<span>${GAMES[k].short}</span><small>${dd[k]?'Fait':going?'En cours':'À jouer'}</small></button>`}).join('')}</div>
+  <div class="streakline">${FLAME}<span class="num">${st} jour${st>1?'s':''} de série · record ${S.flags.best||0}</span></div></div>
+ <div class="section-title"><h2>Progression</h2><span class="eyebrow num">${LEVELS} niveaux par jeu</span></div>
+ <div class="games">${ORDER.map(k=>{const L=S.p[k].level,t=tierOf(L),G=GAMES[k];const doneLv=Math.min(L-1,LEVELS);const going=S.saved[idOf(k,L,false)];
+  return`<div class="gtile">${going?'<span class="chip">En cours</span>':''}<div class="ico">${ICONS[G.icon]}</div><div><h3>${G.name}</h3>
+  <div class="meta num">${L>LEVELS?'Bonus '+(L-LEVELS):'Niveau '+L} · ${TIERS[t]}</div></div>
+  <div class="tierbar" title="Niveaux terminés"><i style="width:${doneLv/LEVELS*100}%"></i></div>
+  <div class="meta num">${doneLv} / ${LEVELS} · ${totalStars(k)} ★</div>
+  <div class="actions"><button class="btn primary" data-play="${k}">${going?'Reprendre':'Jouer'}</button><button class="btn link" data-lv="${k}">Tous les niveaux</button></div></div>`}).join('')}</div>
+ <div class="section-title"><h2>Badges</h2><span class="eyebrow num">${badges.filter(b=>b[3]).length} / ${badges.length}</span></div>
+ <div class="badges">${badges.map(([m,t,s,on])=>`<div class="badge${on?' on':''}"><div class="medal">${m}</div><b>${t}</b><span>${s}</span></div>`).join('')}</div>
+ <div class="stats"><div class="stat"><b class="num">${S.solved}</b><span>grilles résolues</span></div><div class="stat"><b class="num">${ORDER.reduce((a,k)=>a+totalStars(k),0)}</b><span>étoiles</span></div><div class="stat"><b class="num">${S.flags.best||0}</b><span>meilleure série</span></div></div>
+ <p class="foot">Ta progression et tes parties en cours restent dans ce navigateur, sur cet appareil.</p>`;
+ $('setBtn').onclick=openSettings;
+ $('home').querySelectorAll('[data-daily]').forEach(b=>b.onclick=()=>start(b.dataset.daily,0,true));
+ $('home').querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>start(b.dataset.play,S.p[b.dataset.play].level,false));
+ $('home').querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>openLevels(b.dataset.lv));
+ show('home')}
+function openLevels(k){const rec=S.p[k],G=GAMES[k];const max=Math.max(LEVELS,rec.level);let html='';
+ for(let l=1;l<=max;l++){
+  if(l>LEVELS&&l===LEVELS+1)html+=`<div class="tierhead"><b>Bonus</b><span>grilles Maître sans fin</span></div>`;
+  else if(l<=LEVELS&&(l-1)%PER===0){const t=tierOf(l);let s=0;for(let m=l;m<l+PER;m++)s+=rec.stars[m]||0;
+   html+=`<div class="tierhead"><b>${t+1}. ${TIERS[t]}</b><span class="num">niveaux ${l}–${l+PER-1} · ${s} / ${PER*3} ★</span></div>`}
+  const s=rec.stars[l]||0,b=rec.best[l];const locked=l>rec.level;
+  html+=`<button class="lv${l===rec.level?' next':''}" data-l="${l}" ${locked?'disabled aria-label="Niveau '+l+' verrouillé"':''}><span class="num">${l}</span><small>${s?'★'.repeat(s):l===rec.level?'à jouer':'&nbsp;'}</small>${b!==undefined?`<small class="bt num">${fmt(b)}</small>`:''}</button>`}
+ const going=S.saved[idOf(k,rec.level,false)];
+ $('levelsView').innerHTML=`<div class="topbar"><button class="iconbtn" id="lvBack" aria-label="Retour">${BACK}</button>
+  <div class="t"><div class="eyebrow num">${Math.min(rec.level-1,LEVELS)} / ${LEVELS} · ${totalStars(k)} ★</div><h2>${G.name}</h2></div><span style="width:42px"></span></div>
+  <div class="levelhead"><div class="ico">${ICONS[G.icon]}</div><p>${G.rules}</p>
+  <button class="btn primary" id="lvGo">${going?'Reprendre':'Continuer'} · niveau ${rec.level}</button></div>
+  <div class="levels">${html}</div>`;
+ $('lvBack').onclick=renderHome;$('lvGo').onclick=()=>start(k,rec.level,false);
+ $('levelsView').querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>start(k,+b.dataset.l,false));show('levelsView');
+ const nx=$('levelsView').querySelector('.lv.next');if(nx&&rec.level>10)nx.scrollIntoView({block:'center'})}
+renderHome();
+</script>
+
+<script>
+if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+</script>
+</body>
+</html>

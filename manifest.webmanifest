@@ -1,0 +1,17 @@
+{
+  "name": "Grilles du soir",
+  "short_name": "Grilles",
+  "description": "Huit casse-têtes de logique, 150 niveaux chacun, défis du jour et badges.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#E9EEEC",
+  "theme_color": "#15222A",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
