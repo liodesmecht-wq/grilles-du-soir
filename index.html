@@ -124,9 +124,11 @@ button:focus-visible,.cell:focus-visible,summary:focus-visible{outline:3px solid
 .tool svg{width:20px;height:20px}
 .tool:disabled{opacity:.4;cursor:default}
 .tool .cnt{color:var(--muted);font-weight:400}
-.numpad{display:grid;gap:6px;width:min(100%,440px);margin-top:12px}
+#extra{width:min(100%,440px)}
+.numpad{display:grid;gap:8px;width:100%;margin-top:12px}
 .digits{display:grid;gap:8px}
-.digits button,.notebtn{border:1px solid var(--line);background:var(--surface);border-radius:16px;min-height:64px;font-family:var(--font-display);font-size:30px;font-weight:700;padding:0;min-width:0;touch-action:manipulation;box-shadow:0 2px 0 var(--line)}
+.digits button{aspect-ratio:1}
+.digits button,.notebtn{border:1px solid var(--line);background:var(--surface);border-radius:16px;min-height:56px;font-family:var(--font-display);font-size:34px;font-weight:700;padding:0;min-width:0;touch-action:manipulation;box-shadow:0 2px 0 var(--line)}
 .digits button:active{transform:translateY(2px);box-shadow:none;background:var(--soft)}
 .digits .erase{font-size:16px;color:var(--muted);display:grid;place-items:center;gap:0}
 .digits .erase svg{width:26px;height:26px}
