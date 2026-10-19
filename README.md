@@ -1,6 +1,6 @@
 # Grilles du soir
 
-Huit casse-têtes de logique (Reines, Soleil & Lune, Fil, Sudoku, Nonogramme, Futoshiki, Flux, Lumières), 150 niveaux chacun, défis du jour et badges.
+Neuf casse-têtes de logique (Reines, Soleil & Lune, Fil, Patchwork, Sudoku, Nonogramme, Futoshiki, Flux, Lumières), 150 niveaux chacun, défis du jour et badges.
 
 **Jouer :** https://liodesmecht-wq.github.io/grilles-du-soir/
 

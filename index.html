@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#E9EEEC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F161A" media="(prefers-color-scheme: dark)">
-<meta name="description" content="Huit casse-têtes de logique, 150 niveaux chacun, défis du jour et badges.">
+<meta name="description" content="Neuf casse-têtes de logique, 150 niveaux chacun, défis du jour et badges.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -64,7 +64,14 @@ button:focus-visible,.cell:focus-visible,summary:focus-visible{outline:3px solid
 .daily h2{font-size:22px}
 .streakline{display:flex;justify-content:center;gap:6px;align-items:center;font-size:14px;opacity:.85}
 .flame{width:16px;height:16px}
-.daily-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.daily-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pzlayer{position:absolute;inset:3px;pointer-events:none;z-index:2}
+.pzrect{position:absolute;box-sizing:border-box;border:3px solid color-mix(in srgb,var(--ink) 70%,transparent);border-radius:9px;background:var(--pc);background-clip:padding-box}
+.pzrect.bad{background-image:repeating-linear-gradient(45deg,color-mix(in srgb,var(--err) 40%,transparent) 0 4px,transparent 4px 9px);border-color:var(--err)}
+.pzprev{position:absolute;box-sizing:border-box;border:3px dashed var(--accent);border-radius:9px;background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.pzclue{position:absolute;transform:translate(-50%,-50%);display:grid;place-items:center;background:var(--pc);border:2px solid var(--ink);color:var(--ink);font-family:var(--font-display);font-weight:800;line-height:1;z-index:3}
+.pzclue{border-radius:6px}.pzclue.any{border-radius:50%;border-style:dashed}
+
 .dchip{border:0;background:color-mix(in srgb,var(--bg) 12%,transparent);border-radius:14px;padding:10px 2px 8px;display:grid;justify-items:center;align-content:center;gap:4px;font-size:12px;font-weight:700;color:var(--bg);min-width:0}
 .dchip svg{width:32px;height:32px;display:block}
 .dchip small{font-weight:400;font-size:11px;opacity:.75}
@@ -272,6 +279,7 @@ const ICONS={
  nono:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><g fill="var(--ink)"><rect x="16" y="16" width="7" height="7" rx="1"/><rect x="23" y="16" width="7" height="7" rx="1"/><rect x="30" y="23" width="7" height="7" rx="1"/><rect x="16" y="30" width="7" height="7" rx="1"/><rect x="23" y="30" width="7" height="7" rx="1"/><rect x="30" y="30" width="7" height="7" rx="1"/></g><g font-size="7" font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="700" fill="var(--muted)" text-anchor="middle"><text x="10" y="22">2</text><text x="10" y="29">1</text><text x="10" y="36">3</text><text x="20" y="12">2</text><text x="27" y="12">2</text><text x="34" y="12">2</text></g></svg>',
  futo:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><rect x="6" y="13" width="13" height="18" rx="3" fill="var(--surface)"/><rect x="25" y="13" width="13" height="18" rx="3" fill="var(--surface)"/><g font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="800" text-anchor="middle"><text x="12.5" y="27" font-size="12" fill="var(--ink)">2</text><text x="31.5" y="27" font-size="12" fill="var(--accent)">4</text><text x="22" y="26.5" font-size="11" fill="var(--ink)">&lt;</text></g></svg>',
  flow:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><path d="M11 11v22h10" fill="none" stroke="var(--f0)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 11h11v22" fill="none" stroke="var(--f1)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="5" fill="var(--f0)"/><circle cx="21" cy="33" r="5" fill="var(--f0)"/><circle cx="22" cy="11" r="5" fill="var(--f1)"/><circle cx="33" cy="33" r="5" fill="var(--f1)"/></svg>',
+ patch:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><rect x="6" y="6" width="19" height="12" rx="3" fill="var(--r1)"/><rect x="27" y="6" width="11" height="21" rx="3" fill="var(--r0)"/><rect x="6" y="20" width="19" height="18" rx="3" fill="var(--r2)"/><rect x="27" y="29" width="11" height="9" rx="3" fill="var(--r3)"/><rect x="10.5" y="24" width="10" height="10" rx="2" fill="none" stroke="var(--ink)" stroke-width="2"/><rect x="12" y="8.5" width="7" height="7" rx="1.5" fill="none" stroke="var(--ink)" stroke-width="0"/><text x="15.5" y="32" font-size="8" text-anchor="middle" font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="800" fill="var(--ink)">6</text></svg>',
  lights:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><g><rect x="7" y="7" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="17.75" y="7" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="28.5" y="7" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="7" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="17.75" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="28.5" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="7" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="17.75" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="28.5" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--line)"/></g></svg>'
 };
 const STAR=on=>`<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" fill="${on?'var(--gold)':'var(--soft)'}" stroke="${on?'var(--gold)':'var(--line)'}" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
@@ -333,7 +341,7 @@ function tangoSolve(n,giv,cons,limit,r){const h=n/2,g=new Array(n*n).fill(0);
   const vals=giv[i]?[giv[i]]:(r?(r()<.5?[1,2]:[2,1]):[1,2]);const y=i/n|0,x=i%n;
   for(const v of vals){if(!ok(i,v))continue;g[i]=v;rs[y][v]++;cs[x][v]++;go(i+1);rs[y][v]--;cs[x][v]--;g[i]=0;if(cnt>=limit)return}};
  go(0);return{cnt,first}}
-const Tango={key:'tango',name:'Soleil & Lune',short:'Soleil',icon:'tango',target:[30,40,50,60,75,90,130,160,200,240],
+const Tango={key:'tango',name:'Soleil & Lune',short:'Soleil',icon:'tango',errDelay:900,target:[30,40,50,60,75,90,130,160,200,240],
  rules:'Remplis la grille de soleils et de lunes : chaque ligne et chaque colonne en contient autant des deux. Jamais plus de deux symboles identiques côte à côte. « = » relie deux cases identiques, « × » deux cases opposées.',
  make(r,t){const n=t<6?6:8;const sol=tangoSolve(n,new Array(n*n).fill(0),[],1,r).first;
   const pairs=[];for(let i=0;i<n*n;i++){const y=i/n|0,x=i%n;if(x<n-1)pairs.push([i,i+1]);if(y<n-1)pairs.push([i,i+n])}
@@ -585,8 +593,74 @@ const Lights={key:'lights',name:'Lumières',short:'Lumières',icon:'lights',targ
  hint(p,st){const i=range(p.n*p.n).find(i=>p.pr[i]^st.pr[i]);if(i!==undefined)this.press(p,st,i)}
 };
 
-const GAMES={queens:Queens,tango:Tango,zip:Zip,sudoku:Sudoku,nono:Nono,futo:Futoshiki,flow:Flow,lights:Lights};
-const ORDER=['queens','tango','zip','sudoku','nono','futo','flow','lights'];
+/* ---------- Patchwork (façon Patches) ---------- */
+const shapeOf=(w,h)=>w===h?'sq':w>h?'h':'v';
+function patchCands(n,clues,ci,maxA){const c=clues[ci],cy=c.i/n|0,cx=c.i%n,out=[];
+ for(let h=1;h<=n;h++)for(let w=1;w<=n;w++){const a=w*h;if(c.hideN?(a<2||a>maxA):a!==c.a)continue;if(!c.hideS&&shapeOf(w,h)!==c.s)continue;
+  for(let y=Math.max(0,cy-h+1);y<=Math.min(cy,n-h);y++)for(let x=Math.max(0,cx-w+1);x<=Math.min(cx,n-w);x++){let ok=true;
+   for(const o of clues){if(o===c)continue;const oy=o.i/n|0,ox=o.i%n;if(oy>=y&&oy<y+h&&ox>=x&&ox<x+w){ok=false;break}}
+   if(ok){const cells=[];for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)cells.push(yy*n+xx);out.push({x,y,w,h,cells})}}}
+ return out}
+function patchSolve(n,clues,limit,maxA){const N=n*n,cover=new Int16Array(N).fill(-1),used=new Array(clues.length).fill(null);let cnt=0,first=null;
+ const byCell=Array.from({length:N},()=>[]);clues.forEach((c,k)=>patchCands(n,clues,k,maxA).forEach(r=>r.cells.forEach(i=>byCell[i].push([k,r]))));
+ const go=()=>{let bo=null,bc=1e9;
+  for(let i=0;i<N;i++){if(cover[i]>=0)continue;const opts=[];for(const kr of byCell[i]){if(used[kr[0]])continue;if(kr[1].cells.every(j=>cover[j]<0))opts.push(kr)}
+   if(opts.length<bc){bc=opts.length;bo=opts;if(bc<=1)break}}
+  if(!bo){cnt++;if(!first)first=used.map(r=>({x:r.x,y:r.y,w:r.w,h:r.h}));return}
+  if(!bc)return;
+  for(const[k,r]of bo){used[k]=r;r.cells.forEach(j=>cover[j]=k);go();r.cells.forEach(j=>cover[j]=-1);used[k]=null;if(cnt>=limit)return}};
+ go();return{cnt,first}}
+const rectBox=(n,a,b)=>{const ay=a/n|0,ax=a%n,by=b/n|0,bx=b%n;const x=Math.min(ax,bx),y=Math.min(ay,by);return{x,y,w:Math.abs(ax-bx)+1,h:Math.abs(ay-by)+1}};
+const inRect=(n,q,i)=>{const y=i/n|0,x=i%n;return x>=q.x&&x<q.x+q.w&&y>=q.y&&y<q.y+q.h};
+const overlaps=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
+const Patches={key:'patch',name:'Patchwork',short:'Patchwork',icon:'patch',target:[25,35,45,60,75,90,110,130,160,200],
+ rules:'Découpe toute la grille en rectangles. Chaque rectangle contient exactement un indice : le chiffre donne son nombre de cases, la forme dit s\'il est carré, large ou haut. Un « ? » ou un rond : à toi de deviner. Glisse le doigt d\'un coin à l\'autre pour tracer un rectangle ; touche-le pour l\'effacer.',
+ make(r,t){const n=[5,5,6,6,7,7,8,8,9,9][t],maxA=[6,6,8,8,9,9,10,10,12,12][t];let last=null;
+  for(let att=0;att<300;att++){const own=new Int16Array(n*n).fill(-1),rects=[];
+   for(let i=0;i<n*n;i++){if(own[i]>=0)continue;const y=i/n|0,x=i%n;let mw=0;while(x+mw<n&&own[y*n+x+mw]<0&&mw<5)mw++;
+    const opts=[];for(let w=1;w<=mw;w++)for(let h=1;h<=Math.min(5,n-y);h++){if(w*h>maxA)continue;let ok=true;
+     for(let yy=y;yy<y+h&&ok;yy++)for(let xx=x;xx<x+w;xx++)if(own[yy*n+xx]>=0){ok=false;break}if(ok)opts.push([w,h])}
+    let pool=opts.filter(([w,h])=>w*h>=2);if(!pool.length)pool=opts;const[w,h]=pool[Math.floor(r()*pool.length)];
+    const k=rects.length;rects.push({x,y,w,h});for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)own[yy*n+xx]=k}
+   if(att<250&&rects.some(q=>q.w*q.h===1))continue;
+   const clues=rects.map(q=>({i:(q.y+Math.floor(r()*q.h))*n+q.x+Math.floor(r()*q.w),a:q.w*q.h,s:shapeOf(q.w,q.h),hideN:false,hideS:false}));
+   last={n,maxA,clues,sol:rects};if(patchSolve(n,clues,2,maxA).cnt!==1)continue;
+   const pS=[0,0,.25,.3,.35,.4,.45,.5,.55,.6][t],pN=[0,0,0,.12,.18,.22,.27,.32,.37,.42][t];
+   for(const k of shuffle(range(clues.length),r)){const c=clues[k];
+    if(r()<pS){c.hideS=true;if(patchSolve(n,clues,2,maxA).cnt!==1)c.hideS=false}
+    if(r()<pN){c.hideN=true;if(patchSolve(n,clues,2,maxA).cnt!==1)c.hideN=false}}
+   return last}
+  return last},
+ init(){return{rects:[]}},
+ check(p,st){const n=p.n,N=n*n,cov=new Set();const bad=new Set(),owner={};let allOk=true;
+  st.rects.forEach((q,k)=>{for(let yy=q.y;yy<q.y+q.h;yy++)for(let xx=q.x;xx<q.x+q.w;xx++)cov.add(yy*n+xx);
+   const inside=p.clues.map((c,ci)=>ci).filter(ci=>inRect(n,q,p.clues[ci].i));
+   if(inside.length===1){const c=p.clues[inside[0]];owner[k]=inside[0];if((!c.hideN&&q.w*q.h!==c.a)||(!c.hideS&&shapeOf(q.w,q.h)!==c.s)||q.w*q.h<2&&c.hideN){bad.add(k);allOk=false}}
+   else{allOk=false;if(inside.length>1)bad.add(k)}});
+  return{err:new Set(),bad,owner,won:cov.size===N&&allOk,status:`Cases couvertes : ${cov.size} / ${N} · rectangles : ${st.rects.length} / ${p.clues.length}`}},
+ render(el,p,st,res){const n=p.n;const g=grid(el,n);
+  for(let i=0;i<n*n;i++){const c=document.createElement('div');c.className='cell';c.dataset.i=i;
+   if(i%n)c.style.borderLeft='1px solid var(--line)';if(i>=n)c.style.borderTop='1px solid var(--line)';g.appendChild(c)}
+  const L=document.createElement('div');L.className='pzlayer';const pc=v=>(v/n*100)+'%';
+  const box=(q,cls,bg)=>{const d=document.createElement('div');d.className=cls;d.style.left=pc(q.x);d.style.top=pc(q.y);d.style.width=pc(q.w);d.style.height=pc(q.h);if(bg)d.style.setProperty('--pc',bg);L.appendChild(d);return d};
+  st.rects.forEach((q,k)=>{const o=res.owner[k];box(q,'pzrect'+(res.bad.has(k)?' bad':''),o!==undefined?`var(--r${o%9})`:'var(--soft)')});
+  if(cur&&cur.preview)box(cur.preview,'pzprev');
+  const fs=`calc(min(100vw - 32px, 440px) / ${n} * .36)`;
+  p.clues.forEach((c,ci)=>{const y=c.i/n|0,x=c.i%n;const d=document.createElement('div');const sh=c.hideS?'any':c.s;
+   d.className='pzclue '+sh;d.style.left=pc(x+.5);d.style.top=pc(y+.5);const[ww,hh]={sq:[.58,.58],h:[.78,.46],v:[.46,.78],any:[.6,.6]}[sh];d.style.width=pc(ww);d.style.height=pc(hh);d.style.fontSize=fs;d.style.setProperty('--pc',`var(--r${ci%9})`);
+   d.textContent=c.hideN?'?':c.a;L.appendChild(d)});
+  el.appendChild(L)},
+ down(p,st,j,d){d.end=j;cur.preview=rectBox(p.n,j,j);return'changed'},
+ move(p,st,j,d){d.end=j;cur.preview=rectBox(p.n,d.start,j);return true},
+ up(p,st,d){cur.preview=null;const R=rectBox(p.n,d.start,d.end);
+  if(d.start===d.end){const k=st.rects.findIndex(q=>inRect(p.n,q,d.start));if(k>=0){st.rects.splice(k,1);return true}}
+  st.rects=st.rects.filter(q=>!overlaps(q,R));st.rects.push(R);return true},
+ hint(p,st){const q=p.sol.find(s=>!st.rects.some(o=>o.x===s.x&&o.y===s.y&&o.w===s.w&&o.h===s.h));if(!q)return;
+  st.rects=st.rects.filter(o=>!overlaps(o,q));st.rects.push({...q})}
+};
+
+const GAMES={queens:Queens,tango:Tango,zip:Zip,sudoku:Sudoku,nono:Nono,futo:Futoshiki,flow:Flow,lights:Lights,patch:Patches};
+const ORDER=['queens','tango','zip','patch','sudoku','nono','futo','flow','lights'];
 
 /* ---------- sauvegarde ---------- */
 const KEY='grilles-du-soir.v1';
@@ -631,10 +705,16 @@ function updTimer(){if(!cur||!cur.p)return;const secs=elapsed();$('timer').textC
  const s=starsFor(secs,cur.hints,cur.G.target[cur.t]);$('live').innerHTML=[1,2,3].map(k=>STAR(k<=s)).join('');
  $('hintCnt').textContent=cur.hints?'· '+cur.hints:''}
 function draw(){const b=$('board');b.innerHTML='';b.style.aspectRatio=cur.G.aspect?cur.G.aspect(cur.p):'1';
- const res=cur.G.check(cur.p,cur.st);cur.G.render(b,cur.p,cur.st,res);$('status').textContent=res.status||'';
+ let res=cur.G.check(cur.p,cur.st);
+ if(cur.G.errDelay){/* nouvelle erreur : affichée seulement après un court délai, pour laisser le temps d'un double tap */
+  if(cur.holdUntil&&Date.now()<cur.holdUntil){const se=cur.shownErr||new Set(),sb=cur.shownBad||new Set();res=Object.assign({},res,{err:new Set([...res.err].filter(i=>se.has(i))),bad:new Set([...(res.bad||[])].filter(i=>sb.has(i)))})}
+  else{cur.shownErr=res.err;cur.shownBad=res.bad||new Set()}}
+cur.G.render(b,cur.p,cur.st,res);$('status').textContent=res.status||'';
  const off=cur.done||cur.paused;$('undoBtn').disabled=!cur.hist.length||off;$('hintBtn').disabled=off;$('resetBtn').disabled=off;$('pauseBtn').disabled=cur.done;return res}
 const snapshot=()=>JSON.stringify(cur.st);
-function commit(fn){if(!cur.p||cur.done||cur.paused)return;cur.hist.push(snapshot());fn(cur.st);after()}
+function commit(fn){if(!cur.p||cur.done||cur.paused)return;cur.hist.push(snapshot());fn(cur.st);
+ if(cur.G.errDelay){const me=cur;cur.holdUntil=Date.now()+cur.G.errDelay;clearTimeout(cur.holdT);cur.holdT=setTimeout(()=>{if(cur===me&&cur.p&&!cur.done)draw()},cur.G.errDelay+30)}
+ after()}
 function after(){const res=draw();if(res.won)finish();else persist()}
 function setPaused(v){if(!cur||cur.done||!cur.p)return;cur.paused=v;if(v)stopClock();else runClock();$('pauseCover').hidden=!v;draw();persist()}
 $('undoBtn').onclick=()=>{if(!cur.hist.length)return;cur.st=JSON.parse(cur.hist.pop());draw();persist()};
@@ -685,7 +765,7 @@ function finish(){cur.done=true;stopClock();clearInterval(tick);updTimer();draw(
   if(nd>=STREAK_MIN&&S.streak.last!==today()){S.streak.n=S.streak.last===yesterday()?S.streak.n+1:1;S.streak.last=today();S.flags.best=Math.max(S.flags.best||0,S.streak.n);
    msg=`Journée validée : série de ${S.streak.n} jour${S.streak.n>1?'s':''}.`}
   else if(nd<STREAK_MIN)msg=`Encore ${STREAK_MIN-nd} défi${STREAK_MIN-nd>1?'s':''} pour valider la journée.`;
-  else msg=nd===ORDER.length?'Les huit défis du jour sont faits.':`${nd} défis sur ${ORDER.length} aujourd'hui.`}
+  else msg=nd===ORDER.length?'Tous les défis du jour sont faits.':`${nd} défis sur ${ORDER.length} aujourd'hui.`}
  else{const rec=S.p[cur.key];const prev=rec.best[cur.level];best=prev!==undefined&&secs<prev;
   rec.stars[cur.level]=Math.max(rec.stars[cur.level]||0,stars);rec.best[cur.level]=Math.min(prev??1e9,secs);
   if(cur.level>=rec.level)rec.level=cur.level+1;
@@ -747,13 +827,13 @@ function show(id){['home','levelsView','play'].forEach(s=>$(s).hidden=s!==id);wi
 function totalStars(k){return Object.values(S.p[k].stars).reduce((a,b)=>a+b,0)}
 function badgeList(){const lv=ORDER.map(k=>S.p[k].level-1);return[
  ['1','Premier pas','1 grille',S.solved>=1],['25','Habitué','25 grilles',S.solved>=25],['100','Marathon','100 grilles',S.solved>=100],
- ['500','Infatigable','500 grilles',S.solved>=500],['4','Quatuor','4 défis en un jour',!!S.flags.quatuor],['8','Grand chelem','8 défis en un jour',!!S.flags.chelem],
+ ['500','Infatigable','500 grilles',S.solved>=500],['4','Quatuor','4 défis en un jour',!!S.flags.quatuor],[String(ORDER.length),'Grand chelem','Tous les défis en un jour',!!S.flags.chelem],
  ['3j','Régulier','Série de 3 jours',(S.flags.best||0)>=3],['7j','Assidu','Série de 7 jours',(S.flags.best||0)>=7],['15s','Éclair','Une grille en 15 s',!!S.flags.eclair],
- ['10','Polyvalent','Niveau 10 dans les 8 jeux',lv.every(v=>v>=10)],['★','Sans faute','3 étoiles en Maître',!!S.flags.perfect],['150','Encyclopédiste','150 niveaux d\'un jeu',lv.some(v=>v>=150)]]}
+ ['10','Polyvalent','Niveau 10 dans tous les jeux',!!(S.flags.poly=S.flags.poly||lv.every(v=>v>=10))],['★','Sans faute','3 étoiles en Maître',!!S.flags.perfect],['150','Encyclopédiste','150 niveaux d\'un jeu',lv.some(v=>v>=150)]]}
 function renderHome(){const dd=dailyDone();const st=S.streak.last===today()||S.streak.last===yesterday()?S.streak.n:0;
  const d=new Date().toLocaleDateString('fr-BE',{weekday:'long',day:'numeric',month:'long'});
  const nDone=ORDER.filter(k=>dd[k]).length;const badges=badgeList();
- const head=nDone===ORDER.length?'Les huit sont faits, à demain.':nDone>=STREAK_MIN?`Journée validée · ${nDone} sur ${ORDER.length}`:`${nDone} sur ${ORDER.length} · ${STREAK_MIN} pour valider la journée`;
+ const head=nDone===ORDER.length?'Tout est fait, à demain.':nDone>=STREAK_MIN?`Journée validée · ${nDone} sur ${ORDER.length}`:`${nDone} sur ${ORDER.length} · ${STREAK_MIN} pour valider la journée`;
  $('home').innerHTML=`<header class="masthead"><span></span><div><div class="eyebrow">${d}</div><h1>Grilles du soir</h1></div>
   <button class="iconbtn" id="setBtn" aria-label="Réglages">${GEAR}</button></header>
  <div class="daily"><div><div class="eyebrow">Défis du jour · ${TIERS[DAILY_TIER]}</div><h2>${head}</h2></div>
