@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#E9EEEC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0F161A" media="(prefers-color-scheme: dark)">
-<meta name="description" content="Neuf casse-têtes de logique, 150 niveaux chacun, défis du jour et badges.">
+<meta name="description" content="Dix jeux de réflexion, dont des mots fléchés, 150 niveaux chacun, défis du jour et badges.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -64,7 +64,23 @@ button:focus-visible,.cell:focus-visible,summary:focus-visible{outline:3px solid
 .daily h2{font-size:22px}
 .streakline{display:flex;justify-content:center;gap:6px;align-items:center;font-size:14px;opacity:.85}
 .flame{width:16px;height:16px}
-.daily-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.daily-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cell.fc{background:color-mix(in srgb,var(--soft) 85%,var(--surface));display:flex;flex-direction:column;padding:1px 2px;font-family:var(--font-body);font-weight:700;color:var(--muted);align-items:stretch;justify-content:center;overflow:hidden}
+.fcl{flex:1 1 0;display:flex;align-items:center;justify-content:center;gap:1px;min-height:0;overflow:hidden;font-size:.27em;line-height:1.08;text-align:center}
+.fcl+.fcl{border-top:1px solid var(--line)}
+.ft{overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow-wrap:anywhere;hyphens:auto}
+.fa{color:var(--accent);font-size:1.4em;flex:none;line-height:1}
+.cell.fc.on{background:color-mix(in srgb,var(--accent) 24%,var(--surface));color:var(--ink)}
+.cell.fx{background:color-mix(in srgb,var(--ink) 13%,var(--surface))}
+.fbar{min-height:58px;margin-top:10px;border-radius:14px;background:var(--ink);color:var(--bg);display:flex;align-items:center;gap:10px;padding:10px 14px;font-weight:700;font-size:17px;line-height:1.25;text-align:left}
+.fbar .fa2{font-size:22px;color:var(--sun);flex:none}.fbar .fl2{margin-left:auto;flex:none;font-size:12px;font-weight:400;opacity:.7}
+.kb{display:grid;gap:6px;margin-top:10px}
+.kbrow{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.kbrow button{height:46px;border:1px solid var(--line);background:var(--surface);border-radius:8px;font-family:var(--font-display);font-weight:700;font-size:18px;padding:0;min-width:0;touch-action:manipulation;box-shadow:0 2px 0 var(--line)}
+.kbrow button:active{transform:translateY(2px);box-shadow:none;background:var(--soft)}
+.kbrow .kbdel{grid-column:span 4;font-size:20px;color:var(--muted)}
+.dchip span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
+
 .pzlayer{position:absolute;inset:3px;pointer-events:none;z-index:2}
 .pzrect{position:absolute;box-sizing:border-box;border:3px solid color-mix(in srgb,var(--ink) 70%,transparent);border-radius:9px;background:var(--pc);background-clip:padding-box}
 .pzrect.bad{background-image:repeating-linear-gradient(45deg,color-mix(in srgb,var(--err) 40%,transparent) 0 4px,transparent 4px 9px);border-color:var(--err)}
@@ -280,6 +296,7 @@ const ICONS={
  futo:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><rect x="6" y="13" width="13" height="18" rx="3" fill="var(--surface)"/><rect x="25" y="13" width="13" height="18" rx="3" fill="var(--surface)"/><g font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="800" text-anchor="middle"><text x="12.5" y="27" font-size="12" fill="var(--ink)">2</text><text x="31.5" y="27" font-size="12" fill="var(--accent)">4</text><text x="22" y="26.5" font-size="11" fill="var(--ink)">&lt;</text></g></svg>',
  flow:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><path d="M11 11v22h10" fill="none" stroke="var(--f0)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 11h11v22" fill="none" stroke="var(--f1)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="11" cy="11" r="5" fill="var(--f0)"/><circle cx="21" cy="33" r="5" fill="var(--f0)"/><circle cx="22" cy="11" r="5" fill="var(--f1)"/><circle cx="33" cy="33" r="5" fill="var(--f1)"/></svg>',
  patch:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><rect x="6" y="6" width="19" height="12" rx="3" fill="var(--r1)"/><rect x="27" y="6" width="11" height="21" rx="3" fill="var(--r0)"/><rect x="6" y="20" width="19" height="18" rx="3" fill="var(--r2)"/><rect x="27" y="29" width="11" height="9" rx="3" fill="var(--r3)"/><rect x="10.5" y="24" width="10" height="10" rx="2" fill="none" stroke="var(--ink)" stroke-width="2"/><rect x="12" y="8.5" width="7" height="7" rx="1.5" fill="none" stroke="var(--ink)" stroke-width="0"/><text x="15.5" y="32" font-size="8" text-anchor="middle" font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="800" fill="var(--ink)">6</text></svg>',
+ fleches:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><rect x="6" y="6" width="15" height="15" rx="3" fill="var(--line)"/><path d="M10 11h6M10 15h4" stroke="var(--ink)" stroke-width="1.6" stroke-linecap="round"/><path d="M18.5 17.5l3 0" stroke="var(--accent)" stroke-width="2"/><path d="M21.5 15.5l2.2 2-2.2 2z" fill="var(--accent)"/><rect x="23" y="6" width="15" height="15" rx="3" fill="var(--surface)"/><rect x="6" y="23" width="15" height="15" rx="3" fill="var(--surface)"/><rect x="23" y="23" width="15" height="15" rx="3" fill="var(--surface)"/><g font-family="Bricolage Grotesque,system-ui,sans-serif" font-weight="800" font-size="11" text-anchor="middle" fill="var(--ink)"><text x="30.5" y="17.5">M</text><text x="13.5" y="34.5">O</text><text x="30.5" y="34.5">T</text></g></svg>',
  lights:'<svg viewBox="0 0 44 44"><rect x="1" y="1" width="42" height="42" rx="10" fill="var(--soft)"/><g><rect x="7" y="7" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="17.75" y="7" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="28.5" y="7" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="7" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="17.75" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="28.5" y="17.75" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="7" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--line)"/><rect x="17.75" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--sun)"/><rect x="28.5" y="28.5" width="8.5" height="8.5" rx="2" fill="var(--line)"/></g></svg>'
 };
 const STAR=on=>`<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z" fill="${on?'var(--gold)':'var(--soft)'}" stroke="${on?'var(--gold)':'var(--line)'}" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
@@ -613,7 +630,7 @@ function patchSolve(n,clues,limit,maxA){const N=n*n,cover=new Int16Array(N).fill
 const rectBox=(n,a,b)=>{const ay=a/n|0,ax=a%n,by=b/n|0,bx=b%n;const x=Math.min(ax,bx),y=Math.min(ay,by);return{x,y,w:Math.abs(ax-bx)+1,h:Math.abs(ay-by)+1}};
 const inRect=(n,q,i)=>{const y=i/n|0,x=i%n;return x>=q.x&&x<q.x+q.w&&y>=q.y&&y<q.y+q.h};
 const overlaps=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
-const Patches={key:'patch',name:'Patchwork',short:'Patchwork',icon:'patch',target:[25,35,45,60,75,90,110,130,160,200],
+const Patches={key:'patch',name:'Patchwork',short:'Patch',icon:'patch',target:[25,35,45,60,75,90,110,130,160,200],
  rules:'Découpe toute la grille en rectangles. Chaque rectangle contient exactement un indice : le chiffre donne son nombre de cases, la forme dit s\'il est carré, large ou haut. Un « ? » ou un rond : à toi de deviner. Glisse le doigt d\'un coin à l\'autre pour tracer un rectangle ; touche-le pour l\'effacer.',
  make(r,t){const n=[5,5,6,6,7,7,8,8,9,9][t],maxA=[6,6,8,8,9,9,10,10,12,12][t];let last=null;
   for(let att=0;att<300;att++){const own=new Int16Array(n*n).fill(-1),rects=[];
@@ -659,8 +676,725 @@ const Patches={key:'patch',name:'Patchwork',short:'Patchwork',icon:'patch',targe
   st.rects=st.rects.filter(o=>!overlaps(o,q));st.rects.push({...q})}
 };
 
-const GAMES={queens:Queens,tango:Tango,zip:Zip,sudoku:Sudoku,nono:Nono,futo:Futoshiki,flow:Flow,lights:Lights,patch:Patches};
-const ORDER=['queens','tango','zip','patch','sudoku','nono','futo','flow','lights'];
+/* ---------- Mots fléchés ---------- */
+const LEX_RAW=`#1
+an|Douze mois
+as|Carte qui vaut un
+bu|Avalé, pour une boisson
+ce|Adjectif démonstratif
+do|Première note de la gamme
+du|Article contracté
+en|Préposition de lieu
+et|Conjonction d'addition
+fa|Note après mi
+il|Pronom masculin
+la|Note après sol
+le|Article masculin
+lu|Parcouru des yeux
+ma|Possessif féminin
+me|Pronom de la première personne
+mi|Note après ré
+ne|Début de négation
+nu|Sans vêtements
+or|Métal jaune précieux
+os|Pièce du squelette
+ou|Conjonction de choix
+ré|Note après do
+si|Note après la
+sa|Son, au féminin
+se|Pronom réfléchi
+ta|Ton, au féminin
+te|Pronom complément
+tu|Tutoiement
+un|Premier nombre
+vu|Aperçu
+pu|Participe passé de pouvoir
+su|Participe passé de savoir
+eu|Participe passé d'avoir
+ri|Participe passé de rire
+ni|Ni chaud ... froid
+dé|Cube à jouer
+air|On le respire
+ami|Copain
+âne|Il brait
+arc|Il lance des flèches
+bal|Soirée dansante
+bas|Contraire de haut
+bec|Bouche d'oiseau
+blé|Céréale du pain
+bol|Récipient du petit-déjeuner
+but|Objectif, ou cage au foot
+cap|Direction d'un navire
+car|Autocar
+clé|Elle ouvre la porte
+col|Passage en montagne
+coq|Il chante au lever du jour
+cou|Il porte la tête
+cri|Éclat de voix
+dix|Deux fois cinq
+dos|Arrière du corps
+dur|Pas tendre
+eau|Elle coule du robinet
+été|Saison des vacances
+fée|Elle a une baguette magique
+fer|Métal attiré par l'aimant
+fil|Il sert à coudre
+fin|Dernière partie
+fou|Pièce du jeu d'échecs
+gel|Il givre les vitres
+île|Terre entourée d'eau
+jeu|Partie de cartes
+lac|Étendue d'eau douce
+lit|Meuble pour dormir
+loi|Règle votée au parlement
+lui|Pronom masculin
+mai|Mois du muguet
+mer|Grande étendue salée
+mie|Intérieur du pain
+moi|Pronom de la première personne
+mot|Assemblage de lettres
+mur|Paroi de maison
+nez|Il sent les odeurs
+nid|Maison d'oiseau
+non|Refus
+nul|Sans valeur
+oie|Elle cacarde
+oui|Accord
+pas|Enjambée
+peu|Pas beaucoup
+pie|Oiseau noir et blanc bavard
+pot|Récipient
+pré|Champ d'herbe
+rat|Gros rongeur
+riz|Céréale asiatique
+roi|Il porte la couronne
+rue|Voie en ville
+sac|À main ou à dos
+sel|Il assaisonne
+sol|Plancher
+sud|Point cardinal
+thé|Boisson infusée
+toi|Pronom de la deuxième personne
+ton|Possessif masculin
+une|Article féminin
+ver|Il vit dans la terre
+vie|Existence
+vin|Rouge ou blanc, à table
+vol|Trajet en avion
+zoo|Parc aux animaux
+art|Peinture, musique ou danse
+âge|Nombre d'années
+mal|Douleur
+ail|Il parfume le gigot
+ski|Sport de neige
+bus|Transport en commun
+lin|Tissu d'été
+nom|Prénom ou patronyme
+sec|Sans humidité
+vue|Sens de l'œil
+mou|Pas ferme
+feu|Il brûle
+jus|Boisson de fruit
+lot|Gain de loterie
+âme|Esprit
+est|Point cardinal du levant
+aile|Pour voler
+amie|Copine
+ange|Créature céleste
+août|Mois d'été
+bain|Moment dans la baignoire
+bébé|Nourrisson
+bien|Correct
+bleu|Couleur du ciel
+bois|Matière des arbres
+bras|Membre supérieur
+café|Boisson noire et chaude
+cerf|Il porte des bois
+chat|Il miaule
+chef|Patron
+ciel|Il est bleu quand il fait beau
+dent|Elle mord
+doux|Agréable au toucher
+épée|Arme du mousquetaire
+fête|Célébration
+fils|Enfant garçon
+foin|Herbe séchée
+gare|On y prend le train
+goût|Un des cinq sens
+hier|La veille
+idée|Elle germe dans la tête
+jour|Contraire de nuit
+jupe|Vêtement féminin
+lait|Boisson blanche
+lion|Roi des animaux
+loup|Il hurle à la lune
+lune|Satellite de la Terre
+main|Elle a cinq doigts
+mère|Maman
+miel|Produit des abeilles
+mode|Tendance
+moto|Deux-roues à moteur
+nage|Brasse ou crawl
+noël|Fête du 25 décembre
+noir|Couleur de la nuit
+nuit|Moment du sommeil
+œuf|La poule le pond
+ours|Il hiberne
+pain|Baguette
+père|Papa
+pied|Au bout de la jambe
+pneu|Il équipe la roue
+pont|Il enjambe la rivière
+porc|Cochon
+rose|Fleur à épines
+roue|Elle tourne
+sage|Bien élevé
+soir|Fin de journée
+sous|Dessous
+tête|Elle pense
+toit|Il couvre la maison
+tour|Celle d'Eiffel est célèbre
+vase|Pour les fleurs
+vélo|Bicyclette
+vent|Il souffle
+vert|Couleur de l'herbe
+zéro|Rien du tout
+lire|Parcourir un livre
+dire|Exprimer
+voir|Regarder
+rire|S'esclaffer
+taxi|Voiture avec chauffeur
+note|Résultat d'un examen
+page|Feuille de livre
+port|Abri pour bateaux
+mars|Mois du printemps
+juin|Mois des cerises
+gris|Couleur de la souris
+neuf|Après huit
+onze|Dix plus un
+deux|Un plus un
+cinq|Les doigts d'une main
+mari|Époux
+dame|Femme, ou pièce aux échecs
+joie|Bonheur
+peur|Frayeur
+rêve|Il vient en dormant
+nord|Point cardinal
+lent|Pas rapide
+vite|Rapidement
+haut|Contraire de bas
+long|Pas court
+seul|Sans personne
+four|Pour cuire
+chou|Légume, ou petite pâtisserie
+kiwi|Fruit à peau velue
+noix|Fruit à coque
+zèbre|Cheval rayé
+ouest|Point cardinal du couchant
+arbre|Chêne ou sapin
+avion|Il vole avec des passagers
+balle|Ballon de tennis
+blanc|Couleur de la neige
+carte|À jouer ou routière
+chien|Il aboie
+clown|Il fait rire au cirque
+craie|Pour écrire au tableau
+école|On y apprend à lire
+fleur|Rose ou tulipe
+forêt|Grand bois
+frère|Fils des mêmes parents
+fruit|Pomme ou poire
+glace|Eau gelée, ou dessert
+herbe|Gazon
+hiver|Saison froide
+jaune|Couleur du citron
+livre|On le lit
+monde|La Terre entière
+neige|Flocons blancs
+océan|Atlantique ou Pacifique
+orage|Tonnerre et éclairs
+plage|Sable au bord de la mer
+pluie|Elle mouille
+pomme|Fruit du pommier
+porte|On la franchit pour entrer
+rouge|Couleur de la tomate
+sable|Grains de la plage
+salle|Pièce
+sœur|Fille des mêmes parents
+sport|Activité physique
+sucre|Il adoucit le café
+table|Meuble pour manger
+tapis|Il couvre le sol
+terre|Notre planète
+tigre|Grand félin rayé
+train|Il roule sur des rails
+vache|Elle donne du lait
+ville|Agglomération
+lapin|Il a de longues oreilles
+piano|Instrument à touches
+radio|Elle diffuse des émissions
+photo|Image prise avec un appareil
+musée|On y voit des œuvres
+pêche|Fruit, ou loisir au bord de l'eau
+poire|Fruit du poirier
+ferme|Exploitation agricole
+poule|Elle pond
+lampe|Elle éclaire
+verre|On y boit
+nuage|Il cache le soleil
+bateau|Il flotte
+beurre|On le tartine
+chaise|Siège à dossier
+cheval|Il galope
+citron|Agrume acide
+crayon|Pour dessiner
+enfant|Petit garçon ou petite fille
+jardin|Potager ou parc
+maison|Habitation
+oiseau|Il a des plumes
+orange|Agrume juteux
+papier|Feuille blanche
+soleil|Il brille le jour
+tomate|Rouge, dans la salade
+mouton|Il donne la laine
+canard|Il fait coin-coin
+souris|Rongeur ou accessoire d'ordinateur
+farine|Poudre pour le pain
+fraise|Fruit rouge du printemps
+girafe|Animal au long cou
+voyage|Déplacement lointain
+violon|Instrument à cordes et archet
+ballon|On le lance
+bureau|Table de travail
+cahier|On y écrit à l'école
+dessin|Il se fait au crayon
+fromage|Camembert ou brie
+poisson|Il nage
+voiture|Automobile
+cuisine|Pièce où l'on prépare les repas
+facteur|Il apporte le courrier
+château|Demeure de roi
+journal|Quotidien
+musique|Art des sons
+fenêtre|On l'ouvre pour aérer
+chocolat|Fait avec du cacao
+éléphant|Il a une trompe
+montagne|Mont élevé
+vacances|Période sans école
+papillon|Insecte aux ailes colorées
+escalier|Il a des marches
+dimanche|Dernier jour de la semaine
+pantalon|Vêtement à deux jambes
+téléphone|Il sonne
+frite|Bâtonnet de pomme de terre
+gaufre|Douceur à carreaux
+namur|Capitale de la Wallonie
+liège|Cité ardente
+meuse|Fleuve de Namur et de Liège
+spa|Ville d'eaux des Ardennes
+moules|Servies avec des frites
+belge|Habitant de la Belgique
+#2
+ère|Époque
+état|Nation organisée
+roc|Pierre dure
+rien|Néant
+ans|Années
+osé|Audacieux
+anis|Il parfume le pastis
+ara|Grand perroquet
+aube|Lever du jour
+écu|Ancienne monnaie
+ému|Touché au cœur
+épi|Tête de blé
+étal|Table de marché
+être|Exister
+gué|Passage à pied dans la rivière
+laine|Fil du mouton
+lis|Fleur royale
+loto|Jeu de boules numérotées
+mât|Il porte la voile
+nain|Compagnon de Blanche-Neige
+net|Clair et précis
+nié|Contesté
+ode|Poème lyrique
+onde|Vague
+orme|Arbre des places de village
+oser|Avoir l'audace
+pan|Morceau de mur
+pic|Sommet pointu
+rade|Bassin pour navires
+rame|Elle fait avancer la barque
+rang|Rangée
+sève|Sang des plantes
+sot|Idiot
+tas|Pile
+tel|Pareil
+tir|Coup de fusil
+trio|Groupe de trois
+usé|Abîmé par le temps
+uni|Sans motif
+vis|Elle se serre au tournevis
+élu|Choisi par vote
+étui|Boîte à lunettes
+rai|Rayon de lumière
+sas|Compartiment étanche
+tôt|De bonne heure
+tri|Classement
+opéra|Spectacle chanté
+otage|Retenu prisonnier
+radis|Petite racine rouge
+sirop|Boisson sucrée concentrée
+ténor|Voix d'homme aiguë
+ancre|Elle retient le bateau
+arène|Lieu des corridas
+arôme|Parfum culinaire
+atout|Carte maîtresse
+avare|Harpagon l'est
+épice|Poivre ou cannelle
+étang|Petite étendue d'eau
+navire|Grand bateau
+ortie|Elle pique
+osier|Pour la vannerie
+renne|Il tire le traîneau
+sapin|Arbre de Noël
+sirène|Mi-femme mi-poisson
+talon|Arrière du pied
+trésor|Butin caché
+usine|Fabrique
+oasis|Point d'eau du désert
+olive|Fruit à huile
+roseau|Plante des marais
+aimer|Chérir
+aider|Prêter main-forte
+orner|Décorer
+nier|Contester
+lier|Attacher
+user|Abîmer
+tirer|Contraire de pousser
+poser|Déposer
+sauter|Bondir
+monter|Grimper
+tomber|Chuter
+entrer|Pénétrer
+danser|Valser
+nager|Se déplacer dans l'eau
+manger|Se nourrir
+boire|Se désaltérer
+dormir|Faire dodo
+ouvrir|Contraire de fermer
+écrire|Tracer des lettres
+courir|Aller vite à pied
+partir|S'en aller
+savoir|Connaître
+venir|Arriver
+aller|Se rendre
+avoir|Posséder
+faire|Réaliser
+jouer|S'amuser
+chanter|Pousser la chansonnette
+peindre|Faire un tableau
+étoile|Elle brille la nuit
+écureuil|Rongeur roux des bois
+renard|Le rusé de la fable
+hibou|Rapace nocturne
+lézard|Il se chauffe au soleil sur les murs
+tortue|Lente, avec une carapace
+abeille|Elle butine
+fourmi|Travailleuse de la fable
+cigale|Elle chante tout l'été
+merle|Oiseau noir au bec jaune
+corbeau|Il lâcha son fromage
+rasoir|Pour se raser
+savon|Il mousse
+miroir|Il reflète
+peigne|Pour démêler
+brosse|À dents ou à cheveux
+tasse|Pour le café
+assiette|On y mange
+couteau|Il coupe
+cuillère|Pour la soupe
+évier|Pour la vaisselle
+nappe|Elle couvre la table
+rideau|Il cache la fenêtre
+coussin|Sur le canapé
+canapé|Sofa
+armoire|Pour ranger les vêtements
+tiroir|Partie de meuble qui coulisse
+étagère|Planche de rangement
+lumière|Clarté
+ombre|Contraire de lumière
+silence|Absence de bruit
+bruit|Son désagréable
+parole|Mot prononcé
+regard|Coup d'œil
+sourire|Rire discret
+larme|Goutte de chagrin
+colère|Grosse fâcherie
+calme|Tranquille
+force|Puissance
+santé|Bon état du corps
+riche|Fortuné
+pauvre|Sans argent
+jeune|Pas vieux
+vieux|Âgé
+grand|Pas petit
+petit|Pas grand
+mince|Fin
+lourd|Pesant
+léger|Pas lourd
+chaud|Brûlant
+froid|Glacial
+humide|Mouillé
+propre|Pas sale
+sale|Pas propre
+vrai|Exact
+faux|Inexact
+rapide|Véloce
+facile|Pas difficile
+juste|Équitable
+noble|Aristocrate
+aigu|Pointu ou strident
+amer|Comme le café sans sucre
+mûr|Prêt à être cueilli
+cru|Pas cuit
+cuit|Passé au four
+rôti|Viande au four
+steak|Tranche de bœuf
+salade|Laitue
+soupe|Potage
+crêpe|Spécialité de la Chandeleur
+tarte|Pâtisserie aux fruits
+gâteau|Dessert d'anniversaire
+bonbon|Sucrerie
+biscuit|Petit gâteau sec
+omelette|Œufs battus et cuits
+pizza|Spécialité de Naples
+pâtes|Spaghetti ou tagliatelles
+lentille|Légumineuse
+haricot|Légume vert ou blanc
+carotte|Légume orange
+poireau|Légume de la soupe
+oignon|Il fait pleurer
+navet|Mauvais film, ou légume
+céleri|Légume en branches
+melon|Fruit d'été à chair orange
+prune|Fruit violet
+cerise|Petit fruit rouge à noyau
+raisin|Fruit de la vigne
+banane|Fruit jaune
+ananas|Fruit tropical
+amande|Fruit sec
+escaut|Fleuve d'Anvers
+bruges|Venise du Nord
+ardenne|Région boisée du sud de la Belgique
+chicon|Endive, en Belgique
+nonante|Quatre-vingt-dix, en Belgique
+septante|Soixante-dix, en Belgique
+kot|Chambre d'étudiant, en Belgique
+drache|Grosse averse, en Belgique
+tintin|Reporter à la houppe
+hergé|Père de Tintin
+atomium|Symbole de Bruxelles
+mons|Ville du Doudou
+dinant|Ville natale d'Adolphe Sax
+waterloo|Défaite de Napoléon
+bruxelles|Capitale de la Belgique
+anvers|Grand port flamand
+gand|Ville flamande sur l'Escaut
+arlon|Chef-lieu du Luxembourg belge
+ourthe|Rivière ardennaise
+semois|Rivière de Bouillon
+sambre|Rivière de Charleroi
+#3
+ire|Colère, en poésie
+aï|Paresseux d'Amérique
+ru|Petit ruisseau
+if|Conifère des cimetières
+étai|Pièce de soutien
+émoi|Trouble
+ibis|Oiseau sacré d'Égypte
+îlot|Petite île
+inné|Pas acquis
+iota|Lettre grecque
+isba|Maison russe en bois
+ogre|Mangeur d'enfants
+orée|Lisière du bois
+ouïe|Sens de l'oreille
+ouate|Coton
+rôle|Personnage joué
+ruse|Stratagème
+saga|Longue histoire
+sari|Vêtement indien
+sénat|Assemblée des sages
+taon|Mouche piqueuse
+tiare|Couronne papale
+toge|Habit romain
+urne|On y glisse son bulletin
+valse|Danse viennoise
+zèle|Ardeur
+âtre|Foyer de cheminée
+aval|En descendant le courant
+amont|Vers la source
+apex|Sommet
+arête|Os de poisson
+atoll|Île en anneau
+aorte|Grosse artère
+avoine|Céréale des chevaux
+azur|Bleu du ciel
+écrin|Boîte à bijoux
+élan|Cervidé du Nord, ou impulsion
+émail|Il recouvre les dents
+épave|Navire naufragé
+érable|Arbre du Canada
+étau|Il serre sur l'établi
+étole|Écharpe de fourrure
+gîte|Logement de vacances
+haie|Clôture végétale
+houx|Arbuste piquant de Noël
+lama|Animal des Andes
+lice|Champ clos des tournois
+luth|Instrument médiéval
+nacre|Intérieur de l'huître
+nef|Vaisseau d'église
+néon|Gaz lumineux
+olivier|Arbre méditerranéen
+orque|Épaulard
+oseille|Plante acidulée, ou argent en argot
+otarie|Lion de mer
+pagode|Temple asiatique
+pétale|Partie de la corolle
+pivot|Axe de rotation
+prose|Contraire de vers
+rébus|Devinette en dessins
+récif|Rocher à fleur d'eau
+relais|Course en équipe
+rouet|Pour filer la laine
+sabot|Chaussure en bois
+satin|Tissu brillant
+sépia|Encre de seiche
+silo|Réservoir à grain
+soja|Légumineuse asiatique
+stèle|Monument funéraire
+tarot|Jeu de cartes divinatoire
+tison|Bout de bois qui brûle
+trêve|Pause dans les combats
+tulle|Tissu léger de la mariée
+vernis|Il fait briller les ongles
+vigie|Guetteur en haut du mât
+zénith|Point le plus haut du ciel
+élite|Les meilleurs
+idole|Star adorée
+inox|Acier qui ne rouille pas
+ivoire|Matière des défenses d'éléphant
+jade|Pierre verte
+kayak|Canoë fermé
+koala|Mangeur d'eucalyptus
+lagune|Étendue d'eau salée près de la mer
+loupe|Elle grossit
+moka|Café d'Arabie
+morse|Code ou mammifère à défenses
+hautbois|Instrument à anche double
+ocre|Terre jaune-brun
+rotin|Pour les meubles en jonc
+seiche|Mollusque à encre
+tapir|Mammifère à petite trompe
+yak|Bœuf du Tibet
+yoga|Discipline indienne
+zinc|Comptoir de bistrot
+anse|Poignée de tasse, ou petite baie
+péket|Genièvre liégeois
+cuberdon|Bonbon belge en forme de nez
+ket|Gamin, à Bruxelles
+fieu|Fiston, en Belgique
+gosette|Chausson aux pommes, en Belgique
+pistolet|Petit pain rond, en Belgique
+sacoche|Sac à main, en Belgique
+blinquer|Briller, en Belgique`;
+let LEX=null;
+const plainWord=w=>w.toLowerCase().replace(/œ/g,'oe').replace(/æ/g,'ae').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/[^A-Z]/g,'');
+function lexicon(){if(LEX)return LEX;const seen=new Set();LEX=[];let d=1;
+ for(const line of LEX_RAW.split('\n')){const l=line.trim();if(!l)continue;if(l[0]==='#'){d=+l.slice(1);continue}
+  const k=l.indexOf('|');const a=plainWord(l.slice(0,k)),c=l.slice(k+1).trim();
+  if(a.length<2||seen.has(a))continue;seen.add(a);LEX.push({a,c,d})}
+ return LEX}
+/* T : 0 vide, 1 lettre, 2 case-définition, 3 fin de mot (jamais une lettre) */
+function flechesGen(n,pool,r){const N=n*n,T=new Array(N).fill(0),ch=new Array(N).fill(''),dirs=new Array(N).fill(0),slots={},words=[],used=new Set();
+ const bit=d=>d==='h'?1:2;
+ const test=(a,dir,s)=>{const L=a.length,y=s/n|0,x=s%n,step=dir==='h'?1:n;
+  if(dir==='h'?(x<1||x+L>n):(y<1||y+L>n))return -1;
+  const c=s-step;if(T[c]===1)return -1;if(T[c]===2&&slots[c][dir]!==undefined)return -1;
+  const endIn=dir==='h'?x+L<n:y+L<n;if(endIn&&T[s+L*step]===1)return -1;
+  let cross=0;
+  for(let k=0;k<L;k++){const p=s+k*step,t=T[p];
+   if(t===1){if(ch[p]!==a[k]||dirs[p]&bit(dir))return -1;cross++}
+   else if(t===0){if(dir==='h'){if(p>=n&&T[p-n]===1)return -1;if(p+n<N&&T[p+n]===1)return -1}
+    else{const px=p%n;if(px>0&&T[p-1]===1)return -1;if(px<n-1&&T[p+1]===1)return -1}}
+   else return -1}
+  return cross};
+ const put=(w,dir,s)=>{const L=w.a.length,step=dir==='h'?1:n,c=s-step;T[c]=2;(slots[c]=slots[c]||{})[dir]=words.length;
+  const cells=[];for(let k=0;k<L;k++){const p=s+k*step;T[p]=1;ch[p]=w.a[k];dirs[p]|=bit(dir);cells.push(p)}
+  const endIn=dir==='h'?(s%n)+L<n:(s/n|0)+L<n;if(endIn&&T[s+L*step]===0)T[s+L*step]=3;
+  words.push({a:w.a,c:w.c,dir,cells,clue:c});used.add(w.a)};
+ const first=pool.filter(w=>w.a.length>=Math.max(3,n-3)&&w.a.length<=n-1);const w0=first[Math.floor(r()*first.length)];
+ put(w0,'h',(1+Math.floor(r()*(n-2)))*n+1);
+ for(let round=0;round<n*n;round++){let best=null,bs=-1;
+  const byL={};for(let p=0;p<N;p++)if(T[p]===1)(byL[ch[p]]=byL[ch[p]]||[]).push(p);
+  for(const w of shuffle(pool.slice(),r)){if(used.has(w.a)||w.a.length>n-1)continue;
+   for(let k=0;k<w.a.length;k++){const ps=byL[w.a[k]];if(!ps)continue;
+    for(const p of ps)for(const dir of['h','v']){if(dirs[p]&bit(dir))continue;const s=p-k*(dir==='h'?1:n);
+     if(s<0||(dir==='h'&&(s/n|0)!==(p/n|0)))continue;const cr=test(w.a,dir,s);if(cr<1)continue;
+     const sc=cr*6+w.a.length+r()*4;if(sc>bs){bs=sc;best=[w,dir,s]}}}}
+  if(!best)break;put(...best)}
+ return{T,ch,words,slots}}
+const Fleches={key:'fleches',name:'Mots fléchés',short:'Fléchés',icon:'fleches',target:[60,80,100,130,160,190,230,270,320,380],
+ rules:'Remplis la grille avec des mots français. Chaque case grise contient une définition ; la flèche indique le sens du mot : ▸ vers la droite, ▾ vers le bas. On n\'écrit pas les accents. Touche une case ou une définition, puis tape les lettres ; touche deux fois une case pour changer de sens.',
+ make(r,t){const n=[6,6,7,7,8,8,9,9,10,10][t],dmax=[1,1,1,2,2,2,3,3,3,3][t];
+  const pool=lexicon().filter(w=>w.d<=dmax&&w.a.length<=n-1);let best=null,bl=-1;
+  for(let a=0;a<14;a++){const g=flechesGen(n,pool,r);const l=g.T.filter(v=>v===1).length;if(l>bl){bl=l;best=g}}
+  const wordAt=Array.from({length:n*n},()=>({}));best.words.forEach((w,id)=>w.cells.forEach(c=>wordAt[c][w.dir]=id));
+  return{n,...best,wordAt}},
+ init(p){const w=p.words[0];return{v:new Array(p.n*p.n).fill(''),sel:w.cells[0],dir:w.dir}},
+ wordOf(p,st){if(st.sel<0)return null;const id=p.wordAt[st.sel][st.dir];return id===undefined?null:p.words[id]},
+ check(p,st){let tot=0,fill=0,ok=0;p.T.forEach((t,i)=>{if(t!==1)return;tot++;if(st.v[i])fill++;if(st.v[i]===p.ch[i])ok++});
+  return{err:new Set(),won:ok===tot,status:fill===tot&&ok<tot?'Grille complète, mais il reste des erreurs':`Lettres : ${fill} / ${tot}`}},
+ render(el,p,st){const n=p.n,g=grid(el,n);const w=this.wordOf(p,st);const inW=new Set(w?w.cells:[]);
+  for(let i=0;i<n*n;i++){const t=p.T[i];let c;
+   if(t===1){c=document.createElement('button');c.className='cell fl'+(i===st.sel?' sel':inW.has(i)?' peer':'');c.dataset.i=i;c.textContent=st.v[i]||'';
+    c.setAttribute('aria-label',`Lettre, ligne ${(i/n|0)+1}, colonne ${i%n+1}`);c.onclick=()=>this.tap(i)}
+   else if(t===2){c=document.createElement('button');c.className='cell fc'+(w&&w.clue===i?' on':'');
+    for(const d of['h','v']){const id=p.slots[i][d];if(id===undefined)continue;const s=document.createElement('span');s.className='fcl';
+     const tx=document.createElement('span');tx.className='ft';tx.textContent=p.words[id].c;const ar=document.createElement('span');ar.className='fa';ar.textContent=d==='h'?'▸':'▾';
+     s.append(tx,ar);c.appendChild(s)}
+    c.onclick=()=>this.tapClue(i)}
+   else{c=document.createElement('div');c.className='cell fx'}
+   if(i%n)c.style.borderLeft='1px solid var(--line)';if(i>=n)c.style.borderTop='1px solid var(--line)';g.appendChild(c)}
+  const fb=$('fbar');if(fb){fb.textContent='';if(w){const a=document.createElement('span');a.className='fa2';a.textContent=w.dir==='h'?'▸':'▾';
+   const tx=document.createElement('span');tx.textContent=w.c;const ln=document.createElement('span');ln.className='fl2';ln.textContent=`${w.a.length} lettres`;fb.append(a,tx,ln)}}},
+ tap(i){const st=cur.st,wa=cur.p.wordAt[i];
+  if(st.sel===i){const o=st.dir==='h'?'v':'h';if(wa[o]!==undefined)st.dir=o}
+  else{st.sel=i;if(wa[st.dir]===undefined)st.dir=st.dir==='h'?'v':'h'}
+  draw()},
+ tapClue(i){const st=cur.st,p=cur.p,sl=p.slots[i];const ds=['h','v'].filter(d=>sl[d]!==undefined);let d=ds[0];
+  const w0=this.wordOf(p,st);if(w0&&w0.clue===i&&ds.length>1)d=ds.find(x=>x!==w0.dir);
+  const w=p.words[sl[d]];st.dir=d;st.sel=w.cells.find(c=>!st.v[c])??w.cells[0];draw()},
+ key(L){if(!cur||!cur.p||cur.done||cur.paused||cur.st.sel<0)return;const p=cur.p,w=this.wordOf(p,cur.st);
+  if(L)commit(s=>{s.v[s.sel]=L;if(w){const k=w.cells.indexOf(s.sel);if(k<w.cells.length-1)s.sel=w.cells[k+1]}});
+  else commit(s=>{if(s.v[s.sel])s.v[s.sel]='';else if(w){const k=w.cells.indexOf(s.sel);if(k>0){s.sel=w.cells[k-1];s.v[s.sel]=''}}})},
+ onKey(e){if(/^[a-zA-Z]$/.test(e.key)&&!e.ctrlKey&&!e.metaKey){this.key(e.key.toUpperCase());e.preventDefault();return}
+  if(e.key==='Backspace'||e.key==='Delete'){this.key('');e.preventDefault();return}
+  const mv={ArrowLeft:[-1,'h'],ArrowRight:[1,'h'],ArrowUp:[-cur.p.n,'v'],ArrowDown:[cur.p.n,'v']}[e.key];if(!mv)return;e.preventDefault();
+  const st=cur.st,p=cur.p;let i=st.sel;for(let k=0;k<p.n;k++){i+=mv[0];if(i<0||i>=p.n*p.n||(mv[1]==='h'&&(i/p.n|0)!==(st.sel/p.n|0)))return;if(p.T[i]===1)break}
+  if(p.T[i]!==1)return;st.sel=i;if(p.wordAt[i][mv[1]]!==undefined)st.dir=mv[1];else if(p.wordAt[i][st.dir]===undefined)st.dir=mv[1]==='h'?'v':'h';draw()},
+ extra(box){box.innerHTML='<div class="fbar" id="fbar"></div><div class="kb">'+['AZERTYUIOP','QSDFGHJKLM','WXCVBN'].map((row,ri)=>
+   `<div class="kbrow">${[...row].map(ch=>`<button data-k="${ch}">${ch}</button>`).join('')}${ri===2?'<button data-k="" class="kbdel" aria-label="Effacer">⌫</button>':''}</div>`).join('')+'</div>';
+  box.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{b.blur();Fleches.key(b.dataset.k)})},
+ hint(p,st){const bad=i=>p.T[i]===1&&st.v[i]!==p.ch[i];const w=this.wordOf(p,st);
+  let i=bad(st.sel)?st.sel:(w?w.cells.find(bad):undefined);if(i===undefined)i=p.T.findIndex((t,k)=>bad(k));if(i>=0){st.v[i]=p.ch[i];st.sel=i}}
+};
+
+const GAMES={queens:Queens,tango:Tango,zip:Zip,sudoku:Sudoku,nono:Nono,futo:Futoshiki,flow:Flow,lights:Lights,patch:Patches,fleches:Fleches};
+const ORDER=['queens','tango','zip','patch','fleches','sudoku','nono','futo','flow','lights'];
 
 /* ---------- sauvegarde ---------- */
 const KEY='grilles-du-soir.v1';
@@ -740,7 +1474,8 @@ board.addEventListener('pointerup',()=>{if(!drag)return;const d=drag;drag=null;i
  if(cur.G.up&&cur.G.up(cur.p,cur.st,d)){if(!d.pushed)cur.hist.push(d.snap);after()}else persist()});
 board.addEventListener('pointercancel',()=>{drag=null;persist()});
 
-document.addEventListener('keydown',e=>{if(!cur||!cur.p||!cur.G.extra||$('play').hidden)return;const n=cur.p.n;
+document.addEventListener('keydown',e=>{if(cur&&cur.p&&cur.G.onKey&&!$('play').hidden){cur.G.onKey(e);return}
+ if(!cur||!cur.p||!cur.G.extra||$('play').hidden)return;const n=cur.p.n;
  if(/^[1-9]$/.test(e.key))NumGame.put(+e.key);else if(e.key==='Backspace'||e.key==='Delete'||e.key==='0')NumGame.put(0);
  else if(e.key==='n'||e.key==='N')NumGame.toggleNotes();
  else{const d={ArrowLeft:-1,ArrowRight:1,ArrowUp:-n,ArrowDown:n}[e.key];if(d){const s=cur.st.sel<0?0:cur.st.sel;const m=s+d;if(m>=0&&m<n*n){cur.st.sel=m;draw();e.preventDefault()}}}});

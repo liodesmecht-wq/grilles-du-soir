@@ -1,7 +1,7 @@
 {
   "name": "Grilles du soir",
   "short_name": "Grilles",
-  "description": "Neuf casse-têtes de logique, 150 niveaux chacun, défis du jour et badges.",
+  "description": "Dix jeux de réflexion, dont des mots fléchés, 150 niveaux chacun, défis du jour et badges.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
