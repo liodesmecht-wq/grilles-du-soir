@@ -139,6 +139,9 @@ button:focus-visible,.cell:focus-visible,summary:focus-visible{outline:3px solid
 .cell.err{background-image:repeating-linear-gradient(45deg,color-mix(in srgb,var(--err) 30%,transparent) 0 4px,transparent 4px 9px)}
 .cell .x{color:color-mix(in srgb,var(--ink) 55%,transparent);font-weight:500;font-size:1em;line-height:1}
 .cell.auto::after{content:"";width:16%;aspect-ratio:1;border-radius:50%;background:color-mix(in srgb,var(--ink) 30%,transparent)}
+.hintbox{width:min(100%,440px);margin-top:8px;background:color-mix(in srgb,var(--gold) 15%,var(--surface));border:1px solid var(--gold);border-radius:14px;padding:10px 14px;font-size:14px;line-height:1.45;text-align:left}
+.cell.hl{box-shadow:inset 0 0 0 4px var(--gold)}
+.cell.why{background:color-mix(in srgb,var(--gold) 30%,var(--surface))}
 .status{min-height:22px;margin-top:10px;font-size:14px;color:var(--muted);text-align:center}
 .pausecover{position:absolute;inset:0;z-index:5;border-radius:10px;background:var(--surface);border:3px solid var(--ink);display:grid;place-items:center;align-content:center;gap:12px;text-align:center}
 .pausecover h3{font-size:24px}
@@ -246,6 +249,7 @@ button:focus-visible,.cell:focus-visible,summary:focus-visible{outline:3px solid
         <div class="pausecover" id="pauseCover" hidden><h3>En pause</h3><button class="btn primary" id="resumeBtn">Reprendre</button></div>
       </div>
       <div class="status num" id="status"></div>
+      <div class="hintbox" id="hintBox" role="status" hidden></div>
       <div id="extra"></div>
       <div class="tools">
         <button class="tool" id="undoBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Annuler</button>
@@ -274,6 +278,11 @@ const yesterday=()=>{const d=new Date();d.setDate(d.getDate()-1);return ymd(d)};
 const LEVELS=150,PER=15;
 const TIERS=['Initiation','Débutant','Facile','Apprenti','Intermédiaire','Confirmé','Avancé','Difficile','Expert','Maître'];
 const tierOf=l=>Math.min(9,Math.floor((l-1)/PER));
+const levelsOf=G=>G.levels||LEVELS;
+const tierOfG=(G,l)=>G.tierOf?G.tierOf(l):tierOf(l);
+const tierName=(G,t)=>(G.tierNames||TIERS)[t];
+const tierStartG=(G,t)=>G.tierStart?G.tierStart(t):t*PER+1;
+const tierCount=G=>G.tierNames?G.tierNames.length:TIERS.length;
 const DAILY_TIER=5;
 const adj=(n,a,b)=>{const dy=Math.abs((a/n|0)-(b/n|0)),dx=Math.abs(a%n-b%n);return dx+dy===1};
 const nbrs=(n,i)=>{const y=i/n|0,x=i%n,o=[];if(y>0)o.push(i-n);if(y<n-1)o.push(i+n);if(x>0)o.push(i-1);if(x<n-1)o.push(i+1);return o};
@@ -358,9 +367,76 @@ function tangoSolve(n,giv,cons,limit,r){const h=n/2,g=new Array(n*n).fill(0);
   const vals=giv[i]?[giv[i]]:(r?(r()<.5?[1,2]:[2,1]):[1,2]);const y=i/n|0,x=i%n;
   for(const v of vals){if(!ok(i,v))continue;g[i]=v;rs[y][v]++;cs[x][v]++;go(i+1);rs[y][v]--;cs[x][v]--;g[i]=0;if(cnt>=limit)return}};
  go(0);return{cnt,first}}
-const Tango={key:'tango',name:'Soleil & Lune',short:'Soleil',icon:'tango',errDelay:900,target:[30,40,50,60,75,90,130,160,200,240],
+/* ---------- Soleil & Lune : moteur de déduction (indices expliqués, niveaux 151–500) ---------- */
+const TL={pats:{},
+ patterns(n){if(this.pats[n])return this.pats[n];const out=[];
+  for(let m=0;m<1<<n;m++){let ones=0;for(let k=0;k<n;k++)if(m>>k&1)ones++;if(ones!==n/2)continue;let ok=true;
+   for(let k=0;k+2<n;k++){const a=m>>k&1;if(a===(m>>(k+1)&1)&&a===(m>>(k+2)&1)){ok=false;break}}if(ok)out.push(m)}
+  return this.pats[n]=out},
+ ctx(p){if(p._ctx)return p._ctx;const n=p.n,L=[];
+  for(let y=0;y<n;y++)L.push({name:`la ligne ${y+1}`,cells:range(n).map(x=>y*n+x)});
+  for(let x=0;x<n;x++)L.push({name:`la colonne ${x+1}`,cells:range(n).map(y=>y*n+x)});
+  const LC=L.map(l=>{const pos={};l.cells.forEach((c,k)=>pos[c]=k);return p.cons.filter(q=>pos[q.a]!==undefined&&pos[q.b]!==undefined).map(q=>({a:pos[q.a],b:pos[q.b],t:q.t}))});
+  const LP=LC.map(lc=>this.patterns(n).filter(m=>lc.every(q=>{const a=m>>q.a&1,b=m>>q.b&1;return q.t==='='?a===b:a!==b})));
+  return p._ctx={n,cons:p.cons,L,LC,LP}},
+ comps(ctx,g,li){const c=ctx.L[li].cells;let km=0,vm=0;
+  for(let k=0;k<c.length;k++){const v=g[c[k]];if(v){km|=1<<k;if(v===1)vm|=1<<k}}
+  return ctx.LP[li].filter(m=>(m&km)===vm)},
+ // propagation complète (signes + toutes les lignes) : renvoie null ou le nom de ce qui coince
+ propagate(ctx,g){let ch=true;
+  while(ch){ch=false;
+   for(const q of ctx.cons){const a=g[q.a],b=g[q.b];
+    if(a&&b){if(q.t==='='?a!==b:a===b)return'un signe « '+(q.t==='='?'=':'×')+' »';continue}
+    if(a&&!b){g[q.b]=q.t==='='?a:3-a;ch=true}else if(b&&!a){g[q.a]=q.t==='='?b:3-b;ch=true}}
+   for(let li=0;li<ctx.L.length;li++){const l=ctx.L[li];if(l.cells.every(c=>g[c]))continue;
+    const cs=this.comps(ctx,g,li);if(!cs.length)return ctx.L[li].name;
+    for(let k=0;k<ctx.n;k++){const c=l.cells[k];if(g[c])continue;const b0=cs[0]>>k&1;if(cs.every(m=>(m>>k&1)===b0)){g[c]=b0?1:2;ch=true}}}}
+  for(let li=0;li<ctx.L.length;li++)if(!this.comps(ctx,g,li).length)return ctx.L[li].name;
+  return null},
+ // résolution pour la génération : propagation, puis raisonnement par l'absurde si permis
+ solve(ctx,giv,absurd){const g=giv.slice();
+  for(;;){if(this.propagate(ctx,g))return false;if(g.every(v=>v))return true;if(!absurd)return false;
+   let found=false;
+   for(let i=0;i<g.length;i++){if(g[i])continue;
+    for(const v of[1,2]){const t=g.slice();t[i]=v;if(this.propagate(ctx,t)){g[i]=3-v;if(this.propagate(ctx,g))return false;found=true;break}}}
+   if(!found)return false}},
+ // prochaine déduction, de la plus simple à la plus subtile, avec son explication
+ step(ctx,g){const{n,cons,L}=ctx;const un=v=>v===1?'un soleil':'une lune',de=v=>v===1?"d'un soleil":"d'une lune",pl=v=>v===1?'soleils':'lunes',
+   nb=(k,v)=>k===1?(v===1?'1 soleil':'1 lune'):`${k} ${pl(v)}`,cap=s=>s[0].toUpperCase()+s.slice(1);
+  for(const q of cons){const a=g[q.a],b=g[q.b];if(!!a===!!b)continue;const known=a?q.a:q.b,i=a?q.b:q.a,kv=g[known],v=q.t==='='?kv:3-kv;
+   return{i,v,rule:1,refs:[known],why:q.t==='='?`Le signe « = » relie cette case à ${un(kv)} : c'est donc ${un(v)} aussi.`:`Le signe « × » impose deux symboles différents : à côté ${de(kv)}, il faut ${un(v)}.`}}
+  for(const l of L){const c=l.cells;
+   for(let k=0;k+1<n;k++){const v=g[c[k]];if(!v||g[c[k+1]]!==v)continue;
+    for(const e of[k-1,k+2]){if(e<0||e>=n||g[c[e]])continue;
+     return{i:c[e],v:3-v,rule:2,refs:[c[k],c[k+1]],why:`Deux ${pl(v)} se suivent dans ${l.name} : ${v===1?'un troisième':'une troisième'} à la suite est interdit${v===1?'':'e'}, c'est donc ${un(3-v)}.`}}}}
+  for(const l of L){const c=l.cells;
+   for(let k=0;k+2<n;k++){const v=g[c[k]];if(!v||g[c[k+2]]!==v||g[c[k+1]])continue;
+    return{i:c[k+1],v:3-v,rule:3,refs:[c[k],c[k+2]],why:`Cette case est entre deux ${pl(v)} dans ${l.name} : y mettre ${un(v)} en ferait trois à la suite. C'est donc ${un(3-v)}.`}}}
+  for(const l of L){const c=l.cells;for(const v of[1,2]){const has=c.filter(x=>g[x]===v);if(has.length!==n/2)continue;const e=c.find(x=>!g[x]);if(e===undefined)continue;
+   return{i:e,v:3-v,rule:4,refs:has,why:`${cap(l.name)} contient déjà ${n/2} ${pl(v)} : ses cases restantes sont forcément des ${pl(3-v)}.`}}}
+  for(let li=0;li<L.length;li++){const l=L[li],c=l.cells;if(c.every(x=>g[x]))continue;const cs=this.comps(ctx,g,li);if(!cs.length)continue;
+   for(let k=0;k<n;k++){if(g[c[k]])continue;const b0=cs[0]>>k&1;if(!cs.every(m=>(m>>k&1)===b0))continue;const v=b0?1:2;
+    const s=n/2-c.filter(x=>g[x]===1).length,m=n/2-c.filter(x=>g[x]===2).length,sg=ctx.LC[li].length?', en respectant ses signes « = » et « × »':'';
+    return{i:c[k],v,rule:5,refs:c.filter(x=>g[x]),why:`Dans ${l.name}, il reste ${nb(s,1)} et ${nb(m,2)} à placer. Toutes les façons de la compléter sans trois symboles identiques à la suite${sg} mettent ${un(v)} ici.`}}}
+  for(let i=0;i<g.length;i++){if(g[i])continue;
+   for(const v of[1,2]){const t=g.slice();t[i]=v;const w=this.propagate(ctx,t);if(!w)continue;
+    return{i,v:3-v,rule:6,refs:[],why:`Raisonnement par l'absurde : si cette case était ${un(v)}, ${w==='un signe « = »'||w==='un signe « × »'?w+' serait forcément enfreint':w+' ne pourrait plus être complétée sans enfreindre les règles'} un peu plus loin. C'est donc ${un(3-v)}.`}}}
+  return null}
+};
+const Tango={key:'tango',name:'Soleil & Lune',short:'Soleil',icon:'tango',errDelay:900,target:[30,40,50,60,75,90,130,160,200,240,150,190,260,320,420,500,560],
+ levels:500,tierNames:TIERS.concat(['Grand maître','Virtuose','Prodige','Champion','Légende','Mythe','Ultime']),
+ tierOf(l){return l<=150?Math.min(9,Math.floor((l-1)/PER)):Math.min(16,10+Math.floor((l-151)/50))},
+ tierStart(t){return t<10?t*PER+1:151+(t-10)*50},
+ validSave(p,st){return!!st&&Array.isArray(st.c)&&st.c.length===p.n*p.n&&p.giv.every((v,i)=>!v||st.c[i]===v)},
+ makeHard(r,t){const[n,nc,absurd,minC]={10:[6,7,false,2],11:[6,7,true,1],12:[8,12,false,3],13:[8,12,true,2],14:[10,16,false,4],15:[10,16,true,3],16:[10,14,true,2]}[t];
+  const sol=tangoSolve(n,new Array(n*n).fill(0),[],1,r).first;
+  const pairs=[];for(let i=0;i<n*n;i++){const y=i/n|0,x=i%n;if(x<n-1)pairs.push([i,i+1]);if(y<n-1)pairs.push([i,i+n])}
+  let cons=shuffle(pairs,r).slice(0,nc).map(([a,b])=>({a,b,t:sol[a]===sol[b]?'=':'x'}));const giv=sol.slice();
+  for(const i of shuffle(range(n*n),r)){const v=giv[i];giv[i]=0;if(!TL.solve(TL.ctx({n,cons}),giv,absurd))giv[i]=v}
+  for(const c of shuffle(cons.slice(),r)){if(cons.length<=minC)break;const rest=cons.filter(k=>k!==c);if(TL.solve(TL.ctx({n,cons:rest}),giv,absurd))cons=rest}
+  return{n,giv,cons,sol}},
  rules:'Remplis la grille de soleils et de lunes : chaque ligne et chaque colonne en contient autant des deux. Jamais plus de deux symboles identiques côte à côte. « = » relie deux cases identiques, « × » deux cases opposées.',
- make(r,t){const n=t<6?6:8;const sol=tangoSolve(n,new Array(n*n).fill(0),[],1,r).first;
+ make(r,t){if(t>=10)return this.makeHard(r,t);const n=t<6?6:8;const sol=tangoSolve(n,new Array(n*n).fill(0),[],1,r).first;
   const pairs=[];for(let i=0;i<n*n;i++){const y=i/n|0,x=i%n;if(x<n-1)pairs.push([i,i+1]);if(y<n-1)pairs.push([i,i+n])}
   let cons=shuffle(pairs,r).slice(0,[6,6,7,8,9,10,12,13,14,16][t]).map(([a,b])=>({a,b,t:sol[a]===sol[b]?'=':'x'}));
   const giv=sol.slice();const minG=[16,13,11,9,7,5,20,15,10,6][t];let gc=n*n;
@@ -379,14 +455,17 @@ const Tango={key:'tango',name:'Soleil & Lune',short:'Soleil',icon:'tango',errDel
   const filled=c.filter(v=>v).length;return{err,bad,won:filled===n*n&&!err.size,status:`Cases remplies : ${filled} / ${n*n}`}},
  render(el,p,st,res){const n=p.n;const g=grid(el,n);
   for(let i=0;i<n*n;i++){const b=document.createElement('button');const gv=!!p.giv[i];
-   b.className='cell'+(gv?' given':'')+(res.err.has(i)?' err':'');
+   const hi=cur&&cur.hintInfo;b.className='cell'+(gv?' given':'')+(res.err.has(i)?' err':'')+(hi&&hi.i===i?' hl':'')+(hi&&hi.refs&&hi.refs.includes(i)?' why':'');
    if(i%n)b.style.borderLeft='1px solid var(--line)';if(i>=n)b.style.borderTop='1px solid var(--line)';
    b.innerHTML=st.c[i]===1?SUN:st.c[i]===2?MOON:'';b.setAttribute('aria-label',`Case ${i+1}`);
    if(!gv)b.onclick=()=>commit(s=>{s.c[i]=(s.c[i]+1)%3});g.appendChild(b)}
   p.cons.forEach((k,ix)=>{const d=document.createElement('div');d.className='cons'+(res.bad.has(ix)?' bad':'');
    const y=k.a/n|0,x=k.a%n,hz=k.b===k.a+1;d.style.left=((hz?x+1:x+.5)/n*100)+'%';d.style.top=((hz?y+.5:y+1)/n*100)+'%';
    d.style.width=(42/n)+'%';d.textContent=k.t==='='?'=':'×';el.appendChild(d)})},
- hint(p,st){const i0=st.c.findIndex((v,i)=>v&&v!==p.sol[i]);const i=i0>=0?i0:st.c.findIndex(v=>!v);if(i>=0)st.c[i]=p.sol[i]}
+ hint(p,st){const g=st.c,un=v=>v===1?'un soleil':'une lune';const w=g.findIndex((v,i)=>v&&v!==p.sol[i]);
+  if(w>=0){const wv=g[w];g[w]=0;return{i:w,refs:[],why:`Il y a une erreur ici : cette case ne peut pas être ${un(wv)}. Je l'ai effacée ; redemande un indice pour continuer.`}}
+  const d=TL.step(TL.ctx(p),g);if(d&&d.v===p.sol[d.i]){g[d.i]=d.v;return d}
+  const i=g.findIndex(v=>!v);if(i>=0){g[i]=p.sol[i];return{i,refs:[],why:`Cette case demande un raisonnement plus long que ceux que je sais expliquer simplement. Je te la donne : c'est ${un(p.sol[i])}.`}}}
 };
 
 /* ---------- Fil ---------- */
@@ -1420,9 +1499,9 @@ function starsFor(secs,hints,T){let s=3;if(!S.set.zen){if(secs>T)s--;if(secs>T*2
 function stopClock(){if(cur&&cur.since){cur.acc+=Date.now()-cur.since;cur.since=null}}
 function runClock(){if(cur&&!cur.since&&!cur.done&&!cur.paused&&cur.p)cur.since=Date.now()}
 function persist(){if(!cur||cur.done||!cur.p)return;S.saved[cur.id]={st:cur.st,hints:cur.hints,acc:elapsedMs()};save()}
-function start(key,level,daily){const G=GAMES[key];const t=daily?DAILY_TIER:tierOf(level);
+function start(key,level,daily){const G=GAMES[key];const t=daily?DAILY_TIER:tierOfG(G,level);
  clearInterval(tick);cur={key,G,level,daily,t,p:null,id:idOf(key,level,daily),hist:[],hints:0,acc:0,since:null,done:false,paused:false,noteMode:false};
- $('pTitle').textContent=G.name;$('pSub').textContent=daily?'Défi du jour · '+TIERS[t]:`Niveau ${level} / ${LEVELS} · ${TIERS[t]}`;
+ $('pTitle').textContent=G.name;$('pSub').textContent=daily?'Défi du jour · '+TIERS[t]:`Niveau ${level} / ${levelsOf(G)} · ${tierName(G,t)}`;
  $('rules').textContent=G.rules;$('howto').open=!S.seen[key];S.seen[key]=true;save();
  $('pauseCover').hidden=true;$('sheet').hidden=true;$('extra').innerHTML='';$('status').textContent='';$('timer').textContent='0:00';$('live').innerHTML='';
  const b=$('board');b.style.aspectRatio='1';b.innerHTML='<div class="loading">Préparation de la grille…</div>';
@@ -1430,7 +1509,7 @@ function start(key,level,daily){const G=GAMES[key];const t=daily?DAILY_TIER:tier
  const mine=cur;
  setTimeout(()=>{if(cur!==mine)return;
   const p=G.make(rngOf(hash(daily?`jour:${today()}:${key}`:`${key}:${level}`)),t);
-  const sv=S.saved[mine.id];let st=sv?sv.st:G.init(p);
+  let sv=S.saved[mine.id];if(sv&&G.validSave&&!G.validSave(p,sv.st)){delete S.saved[mine.id];sv=null}let st=sv?sv.st:G.init(p);
   if(st.notes===undefined&&G.init(p).notes)st.notes=new Array(p.n*p.n).fill(0);
   Object.assign(cur,{p,st,hints:sv?sv.hints:0,acc:sv?sv.acc:0,since:Date.now()});
   if(G.extra)G.extra($('extra'),p);
@@ -1444,16 +1523,17 @@ function draw(){const b=$('board');b.innerHTML='';b.style.aspectRatio=cur.G.aspe
   if(cur.holdUntil&&Date.now()<cur.holdUntil){const se=cur.shownErr||new Set(),sb=cur.shownBad||new Set();res=Object.assign({},res,{err:new Set([...res.err].filter(i=>se.has(i))),bad:new Set([...(res.bad||[])].filter(i=>sb.has(i)))})}
   else{cur.shownErr=res.err;cur.shownBad=res.bad||new Set()}}
 cur.G.render(b,cur.p,cur.st,res);$('status').textContent=res.status||'';
+ const hb=$('hintBox'),hi=cur.hintInfo;if(hb){hb.hidden=!(hi&&hi.why);hb.textContent='';if(hi&&hi.why){const t=document.createElement('b');t.textContent='Indice · ';hb.append(t,hi.why)}}
  const off=cur.done||cur.paused;$('undoBtn').disabled=!cur.hist.length||off;$('hintBtn').disabled=off;$('resetBtn').disabled=off;$('pauseBtn').disabled=cur.done;return res}
 const snapshot=()=>JSON.stringify(cur.st);
-function commit(fn){if(!cur.p||cur.done||cur.paused)return;cur.hist.push(snapshot());fn(cur.st);
+function commit(fn){if(!cur.p||cur.done||cur.paused)return;cur.hist.push(snapshot());cur.hintInfo=null;fn(cur.st);
  if(cur.G.errDelay){const me=cur;cur.holdUntil=Date.now()+cur.G.errDelay;clearTimeout(cur.holdT);cur.holdT=setTimeout(()=>{if(cur===me&&cur.p&&!cur.done)draw()},cur.G.errDelay+30)}
  after()}
 function after(){const res=draw();if(res.won)finish();else persist()}
 function setPaused(v){if(!cur||cur.done||!cur.p)return;cur.paused=v;if(v)stopClock();else runClock();$('pauseCover').hidden=!v;draw();persist()}
-$('undoBtn').onclick=()=>{if(!cur.hist.length)return;cur.st=JSON.parse(cur.hist.pop());draw();persist()};
-$('resetBtn').onclick=()=>{cur.hist.push(snapshot());const sel=cur.st.sel;cur.st=cur.G.init(cur.p);if(sel!==undefined)cur.st.sel=sel;draw();persist()};
-$('hintBtn').onclick=()=>{cur.hints++;updTimer();commit(st=>cur.G.hint(cur.p,st))};
+$('undoBtn').onclick=()=>{if(!cur.hist.length)return;cur.hintInfo=null;cur.st=JSON.parse(cur.hist.pop());draw();persist()};
+$('resetBtn').onclick=()=>{cur.hist.push(snapshot());cur.hintInfo=null;const sel=cur.st.sel;cur.st=cur.G.init(cur.p);if(sel!==undefined)cur.st.sel=sel;draw();persist()};
+$('hintBtn').onclick=()=>{cur.hints++;updTimer();commit(st=>{cur.hintInfo=cur.G.hint(cur.p,st)||null})};
 $('pauseBtn').onclick=()=>setPaused(true);
 $('resumeBtn').onclick=()=>setPaused(false);
 $('backBtn').onclick=()=>{stopClock();persist();clearInterval(tick);const k=cur.key,d=cur.daily;cur=null;d?renderHome():openLevels(k)};
@@ -1505,8 +1585,8 @@ function finish(){cur.done=true;stopClock();clearInterval(tick);updTimer();draw(
   rec.stars[cur.level]=Math.max(rec.stars[cur.level]||0,stars);rec.best[cur.level]=Math.min(prev??1e9,secs);
   if(cur.level>=rec.level)rec.level=cur.level+1;
   msg=cur.hints?`${cur.hints} indice${cur.hints>1?'s':''} utilisé${cur.hints>1?'s':''}.`:S.set.zen?'Mode zen : le temps ne compte pas.':secs>T?`Objectif 3 étoiles : ${fmt(T)}.`:'Sous l\'objectif de temps.';
-  if(cur.level===LEVELS)msg+=' Tu as terminé les 150 niveaux ! Les suivants sont des grilles Maître en bonus.';
-  else if(tierOf(cur.level+1)>cur.t)msg+=` Palier ${TIERS[tierOf(cur.level+1)]} débloqué.`}
+  if(cur.level===levelsOf(cur.G))msg+=` Tu as terminé les ${levelsOf(cur.G)} niveaux ! Les suivants sont des grilles bonus.`;
+  else if(tierOfG(cur.G,cur.level+1)>cur.t)msg+=` Palier ${tierName(cur.G,tierOfG(cur.G,cur.level+1))} débloqué.`}
  save();try{if(S.set.vibe&&navigator.vibrate)navigator.vibrate([30,50,70])}catch(e){}
  const k=cur.key,l=cur.level,daily=cur.daily;
  const nextDaily=daily?ORDER.find(g=>!dailyDone()[g]):null;
@@ -1574,12 +1654,12 @@ function renderHome(){const dd=dailyDone();const st=S.streak.last===today()||S.s
  <div class="daily"><div><div class="eyebrow">Défis du jour · ${TIERS[DAILY_TIER]}</div><h2>${head}</h2></div>
   <div class="daily-row">${ORDER.map(k=>{const going=!dd[k]&&S.saved[idOf(k,0,true)];return`<button class="dchip${dd[k]?' done':''}" data-daily="${k}">${ICONS[GAMES[k].icon]}<span>${GAMES[k].short}</span><small>${dd[k]?'Fait':going?'En cours':'À jouer'}</small></button>`}).join('')}</div>
   <div class="streakline">${FLAME}<span class="num">${st} jour${st>1?'s':''} de série · record ${S.flags.best||0}</span></div></div>
- <div class="section-title"><h2>Progression</h2><span class="eyebrow num">${LEVELS} niveaux par jeu</span></div>
- <div class="games">${ORDER.map(k=>{const L=S.p[k].level,t=tierOf(L),G=GAMES[k];const doneLv=Math.min(L-1,LEVELS);const going=S.saved[idOf(k,L,false)];
+ <div class="section-title"><h2>Progression</h2><span class="eyebrow num">jusqu'à 500 niveaux</span></div>
+ <div class="games">${ORDER.map(k=>{const G=GAMES[k],L=S.p[k].level,t=tierOfG(G,L),NL=levelsOf(G);const doneLv=Math.min(L-1,NL);const going=S.saved[idOf(k,L,false)];
   return`<div class="gtile">${going?'<span class="chip">En cours</span>':''}<div class="ico">${ICONS[G.icon]}</div><div><h3>${G.name}</h3>
-  <div class="meta num">${L>LEVELS?'Bonus '+(L-LEVELS):'Niveau '+L} · ${TIERS[t]}</div></div>
-  <div class="tierbar" title="Niveaux terminés"><i style="width:${doneLv/LEVELS*100}%"></i></div>
-  <div class="meta num">${doneLv} / ${LEVELS} · ${totalStars(k)} ★</div>
+  <div class="meta num">${L>NL?'Bonus '+(L-NL):'Niveau '+L} · ${tierName(G,t)}</div></div>
+  <div class="tierbar" title="Niveaux terminés"><i style="width:${doneLv/NL*100}%"></i></div>
+  <div class="meta num">${doneLv} / ${NL} · ${totalStars(k)} ★</div>
   <div class="actions"><button class="btn primary" data-play="${k}">${going?'Reprendre':'Jouer'}</button><button class="btn link" data-lv="${k}">Tous les niveaux</button></div></div>`}).join('')}</div>
  <div class="section-title"><h2>Badges</h2><span class="eyebrow num">${badges.filter(b=>b[3]).length} / ${badges.length}</span></div>
  <div class="badges">${badges.map(([m,t,s,on])=>`<div class="badge${on?' on':''}"><div class="medal">${m}</div><b>${t}</b><span>${s}</span></div>`).join('')}</div>
@@ -1590,16 +1670,16 @@ function renderHome(){const dd=dailyDone();const st=S.streak.last===today()||S.s
  $('home').querySelectorAll('[data-play]').forEach(b=>b.onclick=()=>start(b.dataset.play,S.p[b.dataset.play].level,false));
  $('home').querySelectorAll('[data-lv]').forEach(b=>b.onclick=()=>openLevels(b.dataset.lv));
  show('home')}
-function openLevels(k){const rec=S.p[k],G=GAMES[k];const max=Math.max(LEVELS,rec.level);let html='';
+function openLevels(k){const rec=S.p[k],G=GAMES[k],NL=levelsOf(G);const max=Math.max(NL,rec.level);let html='';
  for(let l=1;l<=max;l++){
-  if(l>LEVELS&&l===LEVELS+1)html+=`<div class="tierhead"><b>Bonus</b><span>grilles Maître sans fin</span></div>`;
-  else if(l<=LEVELS&&(l-1)%PER===0){const t=tierOf(l);let s=0;for(let m=l;m<l+PER;m++)s+=rec.stars[m]||0;
-   html+=`<div class="tierhead"><b>${t+1}. ${TIERS[t]}</b><span class="num">niveaux ${l}–${l+PER-1} · ${s} / ${PER*3} ★</span></div>`}
+  if(l===NL+1)html+=`<div class="tierhead"><b>Bonus</b><span>grilles ${tierName(G,tierCount(G)-1)} sans fin</span></div>`;
+  else if(l<=NL&&(l===1||tierOfG(G,l)!==tierOfG(G,l-1))){const t=tierOfG(G,l);const end=t+1<tierCount(G)?tierStartG(G,t+1)-1:NL;let s=0;for(let m=l;m<=end;m++)s+=rec.stars[m]||0;
+   html+=`<div class="tierhead"><b>${t+1}. ${tierName(G,t)}</b><span class="num">niveaux ${l}–${end} · ${s} / ${(end-l+1)*3} ★</span></div>`}
   const s=rec.stars[l]||0,b=rec.best[l];const locked=l>rec.level;
   html+=`<button class="lv${l===rec.level?' next':''}" data-l="${l}" ${locked?'disabled aria-label="Niveau '+l+' verrouillé"':''}><span class="num">${l}</span><small>${s?'★'.repeat(s):l===rec.level?'à jouer':'&nbsp;'}</small>${b!==undefined?`<small class="bt num">${fmt(b)}</small>`:''}</button>`}
  const going=S.saved[idOf(k,rec.level,false)];
  $('levelsView').innerHTML=`<div class="topbar"><button class="iconbtn" id="lvBack" aria-label="Retour">${BACK}</button>
-  <div class="t"><div class="eyebrow num">${Math.min(rec.level-1,LEVELS)} / ${LEVELS} · ${totalStars(k)} ★</div><h2>${G.name}</h2></div><span style="width:42px"></span></div>
+  <div class="t"><div class="eyebrow num">${Math.min(rec.level-1,NL)} / ${NL} · ${totalStars(k)} ★</div><h2>${G.name}</h2></div><span style="width:42px"></span></div>
   <div class="levelhead"><div class="ico">${ICONS[G.icon]}</div><p>${G.rules}</p>
   <button class="btn primary" id="lvGo">${going?'Reprendre':'Continuer'} · niveau ${rec.level}</button></div>
   <div class="levels">${html}</div>`;

@@ -3,7 +3,7 @@
 // Quand le site répond correctement, la copie est mise à jour en arrière-plan
 // (la nouvelle version apparaît à l'ouverture suivante). Si le site est coupé
 // ou renvoie une erreur (404…), la copie enregistrée n'est jamais remplacée.
-const CACHE='grilles-v6';
+const CACHE='grilles-v7';
 const CORE=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png','favicon.png'];
 
 self.addEventListener('install',e=>{
